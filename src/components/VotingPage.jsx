@@ -23,6 +23,7 @@ export default function VotingPage({ userName, onLogout }) {
     const checkAuthAndFetchData = async () => {
       try {
         const authCheck = await fetch(`${API_URL}/api/check-vote`, {
+          method: 'GET',
           credentials: 'include'
         });
 
@@ -330,7 +331,7 @@ export default function VotingPage({ userName, onLogout }) {
                     >
                       {isSubmitting ? 'Submitting...' : (
                         <>
-                          <FaThumbsUp /> Vote for Candidate
+                         <FaHandPaper /> Vote for Candidate
                         </>
                       )}
                     </button>

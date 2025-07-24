@@ -410,16 +410,20 @@ const fetchActiveAuditMember = async () => {
             
             <div className="results-summary">
               <div className="summary-box for">
-                <h4>Leading Candidate</h4>
+                {/* <h4>Leading Candidate</h4> */}
                 <p>
-                  <span className="label">Name:</span> 
+                  {/* <span className="label">Name:</span> 
                   <strong>{auditResults.reduce((max, m) => 
                     (m.votesFor || 0) > (max.votesFor || 0) ? m : max, 
                     { votesFor: 0, name: 'None' }
-                  ).name}</strong>
+                  ).name}</strong> */}
+                  {/* Active audit committee member */}
+                  <strong>{activeAuditMember ? activeAuditMember.name : 'N/A'}</strong>
+                  <span className="label">Count:</span> 
+                  <strong>{(auditResults.find(m => m.id === activeAuditMember?.id)?.votesFor || 0).toLocaleString()}</strong>
                 </p>
                 <p>
-                  <span className="label">Votes:</span> 
+                  <span className="label">Count:</span> 
                   <strong>{auditResults.reduce((max, m) => 
                     Math.max(max, m.votesFor || 0), 0
                   ).toLocaleString()}</strong>
@@ -471,13 +475,13 @@ const fetchActiveAuditMember = async () => {
                 <div className="summary-box for">
                   <h4>FOR</h4>
                   <p><span className="label">Percentage:</span> <strong>{voteCounts.percentageYes}%</strong></p>
-                  <p><span className="label">Units:</span> <strong>{(Number(voteCounts.yes)+Number(Proxy_votes)).toLocaleString()}</strong></p>
+                  <p><span className="label">Count:</span> <strong>{(Number(voteCounts.yes)+Number(Proxy_votes)).toLocaleString()}</strong></p>
                   <p><span className="label">Holdings:</span> <strong>{(Number(Proxy_Holdings)+Number(voteCounts.yesHoldings)).toLocaleString()}</strong></p>
                 </div>
                 <div className="summary-box against">
                   <h4>AGAINST</h4>
                   <p><span className="label">Percentage:</span> <strong>{voteCounts.percentageNo}%</strong></p>
-                  <p><span className="label">Units:</span> <strong>{(Number(voteCounts.no)).toLocaleString()}</strong></p>
+                  <p><span className="label">Count:</span> <strong>{(Number(voteCounts.no)).toLocaleString()}</strong></p>
                   <p><span className="label">Holdings:</span> <strong>{(Number(voteCounts.noHoldings)).toLocaleString()}</strong></p>
                 </div>
               </div>   

@@ -41,21 +41,21 @@ export default function LandingPage({ userName, onLogout, onStartVoting }) {
                 <div className="instruction-marker"></div>
                 <div className="instruction-content">
                   <h3>Voting Selection</h3>
-                  <p>Vote either For or Against for respective resolution</p>
-                </div>
+                  <p>Vote either "For" or "Against" for the respective resolution</p>
+                </div> 
               </li>
 
               <li className="instruction-item">
                 <div className="instruction-marker"></div>
                 <div className="instruction-content">
                   <h3>Single Submission</h3>
-                  <p>You may only vote once per resolution</p>
+                  <p>You can only vote once per resolution</p>
                 </div>
               </li>
               <li className="instruction-item">
                 <div className="instruction-marker"></div>
                 <div className="instruction-content">
-                  <h3>Final Decisions</h3>
+                  <h3>Final Submission</h3>
                   <p>Votes cannot be modified after submission</p>
                 </div>
               </li>

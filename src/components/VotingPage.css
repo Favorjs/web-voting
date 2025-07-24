@@ -406,4 +406,8 @@ width: 100%;
   color: var(--dark);
 }
 
+.audit-btn svg {
+  font-size: 2rem;   /* bigger hand-raise icon */
+}
+
 /* Rest of the existing styles remain the same */
