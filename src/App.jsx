@@ -34,10 +34,10 @@ export default function App() {
           {/* <Route path="/summary" element={<SummaryPage />} />
            */}
           {/* Admin routes */}
-          <Route path="/adminPa$$w0rd!" element={<AdminPanel />} />
-          <Route path="/adminPa$$w0rd!/:tab?" element={<AdminPanel />} />
+          <Route path="/admin" element={<AdminPanel />} />
+          <Route path="/admin/:tab?" element={<AdminPanel />} />
           
-          <Route path="/resultsPa$$w0rd!" element={<ResultsPage />} />
+          <Route path="/results" element={<ResultsPage />} />
           
           {/* Main app flow */}
           <Route path="/" element={
