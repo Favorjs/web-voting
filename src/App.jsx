@@ -31,8 +31,8 @@ export default function App() {
     <Router>
       <div className="app">
         <Routes>
-          <Route path="/summary" element={<SummaryPage />} />
-          
+          {/* <Route path="/summary" element={<SummaryPage />} />
+           */}
           {/* Admin routes */}
           <Route path="/admin" element={<AdminPanel />} />
           <Route path="/admin/:tab?" element={<AdminPanel />} />
