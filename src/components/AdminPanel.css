@@ -1,0 +1,434 @@
+.admin-panel {
+  max-width: 900px;
+  margin: 40px auto;
+  padding: 2rem;
+  font-family: 'Segoe UI', sans-serif;
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+}
+
+.admin-panel h1 {
+  font-size: 2rem;
+  font-weight: 600;
+  margin-bottom: 2rem;
+  text-align: center;
+  color: #222;
+}
+
+.resolution-list h3 {
+  font-size: 1.25rem;
+  margin-bottom: 1rem;
+  color: #333;
+  border-bottom: 2px solid #ddd;
+  padding-bottom: 0.5rem;
+}
+
+.resolution-item {
+  border: 1px solid #e1e1e1;
+  border-radius: 12px;
+  padding: 1rem 1.5rem;
+  margin-bottom: 1rem;
+  background-color: #fafafa;
+  transition: background-color 0.3s ease, border 0.3s ease;
+}
+
+.resolution-item.active {
+  background-color: #e8fce8;
+  border-color: #a5d6a7;
+}
+
+.resolution-item h4 {
+  margin: 0;
+  font-size: 1.1rem;
+  color: #222;
+}
+
+.resolution-item p {
+  margin: 0.5rem 0 1rem;
+  font-size: 0.95rem;
+  color: #555;
+}
+
+.resolution-item button {
+  background-color: #1075bf;
+  color: #fff;
+  border: none;
+  padding: 0.5rem 1.2rem;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.resolution-item button:hover {
+  background-color: #0d5d9d;
+}
+
+.resolution-controls {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.close-resolution-btn,
+.voting-toggle-btn {
+  border: none;
+  padding: 0.6rem 1.4rem;
+  font-size: 1rem;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.close-resolution-btn {
+  background-color: #e53935;
+  color: #fff;
+}
+
+.close-resolution-btn:hover {
+  background-color: #c62828;
+}
+
+.voting-toggle-btn.open {
+  background-color: #43a047;
+  color: #fff;
+}
+
+.voting-toggle-btn.closed {
+  background-color: #1976d2;
+  color: #fff;
+}
+
+.voting-toggle-btn:hover {
+  filter: brightness(0.9);
+}
+
+@media (max-width: 600px) {
+  .resolution-controls {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .admin-panel {
+    padding: 1.5rem;
+  }
+
+  .resolution-item {
+    padding: 1rem;
+  }
+}
+
+/* Add these to AdminPanel.css */
+.panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.add-resolution-btn {
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  padding: 0.6rem 1.2rem;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.add-resolution-btn:hover {
+  background-color: #3e8e41;
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background-color: white;
+  padding: 2rem;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 600px;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+}
+
+.close-btn {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: #666;
+}
+
+.close-btn:hover {
+  color: #333;
+}
+
+
+.admin-panel {
+  max-width: 900px;
+  margin: 40px auto;
+  padding: 2rem;
+  font-family: 'Segoe UI', sans-serif;
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+}
+
+.admin-panel h1 {
+  font-size: 2rem;
+  font-weight: 600;
+  margin-bottom: 2rem;
+  text-align: center;
+  color: #222;
+}
+
+.resolution-list h3 {
+  font-size: 1.25rem;
+  margin-bottom: 1rem;
+  color: #333;
+  border-bottom: 2px solid #ddd;
+  padding-bottom: 0.5rem;
+}
+
+.resolution-item {
+  border: 1px solid #e1e1e1;
+  border-radius: 12px;
+  padding: 1rem 1.5rem;
+  margin-bottom: 1rem;
+  background-color: #fafafa;
+  transition: background-color 0.3s ease, border 0.3s ease;
+}
+
+.resolution-item.active {
+  background-color: #e8fce8;
+  border-color: #a5d6a7;
+}
+
+.resolution-item h4 {
+  margin: 0;
+  font-size: 1.1rem;
+  color: #222;
+}
+
+.resolution-item p {
+  margin: 0.5rem 0 1rem;
+  font-size: 0.95rem;
+  color: #555;
+}
+
+.resolution-item button {
+  background-color: #1075bf;
+  color: #fff;
+  border: none;
+  padding: 0.5rem 1.2rem;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.resolution-item button:hover {
+  background-color: #0d5d9d;
+}
+
+.resolution-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.resolution-controls {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.close-resolution-btn,
+.voting-toggle-btn {
+  border: none;
+  padding: 0.6rem 1.4rem;
+  font-size: 1rem;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.close-resolution-btn {
+  background-color: #e53935;
+  color: #fff;
+}
+
+.close-resolution-btn:hover {
+  background-color: #c62828;
+}
+
+.voting-toggle-btn.open {
+  background-color: #43a047;
+  color: #fff;
+}
+
+.voting-toggle-btn.closed {
+  background-color: #1976d2;
+  color: #fff;
+}
+
+.voting-toggle-btn:hover {
+  filter: brightness(0.9);
+}
+
+.panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.admin-tabs {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.tab-btn {
+  padding: 0.5rem 1rem;
+  border: none;
+  background: #eee;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.tab-btn.active {
+  background: #1075bf;
+  color: white;
+}
+
+.add-resolution-btn {
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  padding: 0.6rem 1.2rem;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.add-resolution-btn:hover {
+  background-color: #3e8e41;
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background-color: white;
+  padding: 2rem;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 600px;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+}
+
+.close-btn {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: #666;
+}
+
+.close-btn:hover {
+  color: #333;
+}
+
+.audit-form {
+  margin-top: 1rem;
+}
+
+.audit-form .form-group {
+  margin-bottom: 1rem;
+}
+
+.audit-form label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+}
+
+.audit-form input,
+.audit-form textarea {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.audit-form button {
+  background-color: #1075bf;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-right: 0.5rem;
+}
+
+.audit-form .cancel-btn {
+  background-color: #e53935;
+}
+
+@media (max-width: 600px) {
+  .resolution-controls {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .admin-panel {
+    padding: 1.5rem;
+  }
+
+  .resolution-item {
+    padding: 1rem;
+  }
+}
