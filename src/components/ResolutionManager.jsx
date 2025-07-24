@@ -22,7 +22,7 @@ export default function ResolutionForm({ resolution = null, onSuccess, onCancel 
     setIsSubmitting(true);
 
     try {
-      const url = resolution ? `${API_URL}/api/resolutions/${resolution.id}` : '${API_URL}/api/admin/resolutions';
+      const url = resolution ? `${API_URL}/api/resolutions/${resolution.id}` : `${API_URL}/api/admin/resolutions`;
       const method = resolution ? 'PUT' : 'POST';
       const response = await fetch(url, {
         method,
