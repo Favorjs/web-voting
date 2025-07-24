@@ -301,7 +301,7 @@ const fetchActiveAuditMember = async () => {
   const resolutionChartData = {
     labels: ['For', 'Against'],
     datasets: [{
-      data: [voteCounts.yes, voteCounts.no],
+      data: [(Number(voteCounts.yes)+Number(Proxy_votes)).toLocaleString(), (Number(voteCounts.no)).toLocaleString()],
       backgroundColor: ['#4CAF50', '#F44336'],
       hoverBackgroundColor: ['#66BB6A', '#EF5350'],
       borderWidth: 1,
@@ -422,12 +422,12 @@ const fetchActiveAuditMember = async () => {
                   <span className="label">Count:</span> 
                   <strong>{(auditResults.find(m => m.id === activeAuditMember?.id)?.votesFor || 0).toLocaleString()}</strong>
                 </p>
-                <p>
+                {/* <p>
                   <span className="label">Count:</span> 
                   <strong>{auditResults.reduce((max, m) => 
                     Math.max(max, m.votesFor || 0), 0
                   ).toLocaleString()}</strong>
-                </p>
+                </p> */}
               </div>
               
               <table border="1" cellPadding="8" style={{ borderCollapse: "collapse", marginTop: "20px" }}>

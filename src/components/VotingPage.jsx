@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { FaSignOutAlt, FaVoteYea, FaCheck, FaTimes, FaHandPaper, FaThumbsUp } from 'react-icons/fa';
+import { FaSignOutAlt, FaVoteYea, FaCheck, FaTimes, FaHandPaper, FaThumbsUp,FaHand } from 'react-icons/fa';
 import { io } from 'socket.io-client';
 import './VotingPage.css';
 import { API_URL } from '../config';
@@ -331,7 +331,7 @@ export default function VotingPage({ userName, onLogout }) {
                     >
                       {isSubmitting ? 'Submitting...' : (
                         <>
-                         <FaHandPaper /> Vote for Candidate
+                         <FaHand /> Vote for Candidate
                         </>
                       )}
                     </button>
