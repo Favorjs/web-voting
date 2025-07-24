@@ -5,7 +5,7 @@ import LandingPage from './components/LandingPage';
 import VotingPage from './components/VotingPage';
 import Results from './components/Results';
 import AdminPanel from './components/AdminPanel';
-import SummaryPage from './components/summaryPage';
+// import SummaryPage from './components/summaryPage';
 import ResultsPage from './components/ResultsPage';
 
 export default function App() {
