@@ -404,7 +404,7 @@ const fetchActiveAuditMember = async () => {
           </span></h1>
           
           <div className="results-display">
-            <div className="chart-container" style={{ height: '400px' }}>
+            <div className="chart-container audit-chart">
               <Bar data={auditChartData} options={auditChartOptions} />
             </div>
             
