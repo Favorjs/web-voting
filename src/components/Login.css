@@ -16,7 +16,7 @@
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  background-color: #f8f9fa;
+  background: linear-gradient(135deg, #f8f9fa 60%, #e9ecef 100%);
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 
 }
@@ -93,7 +93,7 @@
   padding: 2rem;
   max-width: 1200px;
   margin: 0 auto;
-  width: 50%;
+  width: 100%; /* was 50%, now 100% for better mobile fit */
   
 }
 
@@ -101,34 +101,34 @@
   background: white;
   border-radius: 1rem;
   box-shadow: var(--shadow);
-  padding: 3rem;
+  padding: 2rem 1.2rem;
   width: 100%;
-  max-width: 800px;
+  max-width: 400px;
   margin: 0 auto;
+  box-sizing: border-box;
 
 }
 
 .card-header {
   text-align: center;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1.2rem;
  
 }
 
 .icon-circle {
+  width: 3.2rem;
+  height: 3.2rem;
+  margin: 0 auto 0.5rem;
+  border-radius: 50%;
+  background: #212529;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 4rem;
-  height: 3rem;
-  margin: 0 auto 0.5srem;
-  border-radius: 50%;
-  background: #212529;
- 
 }
 
 .login-icon {
   color: white;
-  font-size: 1.75rem;
+  font-size: 1.5rem;
   
 }
 
@@ -141,7 +141,8 @@
 
 .subtext {
   color: #fff;
-  font-size: 1.2rem;
+  font-size: 1rem;
+  margin-top: 0.5rem;
 }
 
 /* Form Styles */
@@ -233,16 +234,16 @@
   align-items: center;
   justify-content: center;
   gap: 0.75rem;
-  padding: 1.1rem;
+  padding: 1rem 0.5rem;
   background: #107b5f;
   color: white;
   border: none;
-  border-radius: 0.75rem;
-  font-size: 1.05rem;
+  border-radius: 0.7rem;
+  font-size: 1.1rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
-  margin-top: 0.5rem;
+  margin-top: 0.7rem;
 }
 
 .login-button:hover:not(:disabled) {
@@ -291,6 +292,7 @@
 .footer-content p {
   color: var(--gray);
   font-size: 0.9rem;
+  text-align: center;
 }
 
 .footer-links {
@@ -334,41 +336,60 @@
   }
 }
 
-@media (max-width: 480px) {
+@media (max-width: 600px) {
   .login-main.wide-layout {
-    padding: 1.5rem;
+    padding: 0.5rem;
   }
-  
   .login-card {
-    padding: 1.5rem;
+    padding: 1.2rem 0.7rem;
+    max-width: 95vw;
+    min-width: unset;
   }
-  
-  .card-header h2 {
-    font-size: 1.3rem;
+  .header-content {
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 0.7rem 0.5rem;
+    height: auto;
   }
-  
-  .subtext {
-    font-size: 0.9rem;
+  .logo {
+    font-size: 1.1rem;
   }
-  
-  .form-group input {
-    padding: 0.9rem 1rem;
+  .main-nav {
+    gap: 1rem;
   }
-  
-  .login-button {
-    padding: 1rem;
-    font-size: 1rem;
+  .login-footer {
+    padding: 0.7rem;
+    font-size: 0.8rem;
   }
+  .footer-content p {
+    font-size: 0.8rem;
+  }
+}
 
-  .login-main.wide-layout {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 2rem;
-    max-width: 1200px;
-    margin: 0 auto;
-    width: 100%;
-    
+@media (max-width: 400px) {
+  .login-card {
+    padding: 0.7rem 0.3rem;
+    max-width: 99vw;
   }
+  .login-main.wide-layout {
+    padding: 0.2rem;
+  }
+}
+
+.smart-input-field, .login-button {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.login-button {
+  font-size: 1.1rem;
+  padding: 1rem 0.5rem;
+  border-radius: 0.7rem;
+  margin-top: 0.7rem;
+}
+
+.input-hint {
+  font-size: 0.85rem;
+  color: #888;
+  margin-top: 0.2rem;
 }
