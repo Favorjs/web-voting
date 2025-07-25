@@ -48,10 +48,21 @@ export default function LandingPage({ userName, onLogout, onStartVoting }) {
               <li className="instruction-item">
                 <div className="instruction-marker"></div>
                 <div className="instruction-content">
+                  <h3>Audit Committee</h3>
+                  <p>A hand-raise icon will appear on your screen when it's time to vote for the announced Audit committee member. To vote for that candidate, click the hand-raise button. If the candidate is not your choice, simply ignore and wait until your preferred candidate is announced.</p>
+                </div>
+              </li>
+
+
+
+              <li className="instruction-item">
+                <div className="instruction-marker"></div>
+                <div className="instruction-content">
                   <h3>Single Submission</h3>
                   <p>You can only vote once per resolution</p>
                 </div>
               </li>
+
               <li className="instruction-item">
                 <div className="instruction-marker"></div>
                 <div className="instruction-content">
