@@ -276,6 +276,12 @@
   box-shadow: 0 4px 12px rgba(16, 123, 95, 0.13);
 }
 
+.exhausted-btn {
+  background-color: #e74c3c !important;
+  color: white !important;
+  opacity: 1 !important;
+}
+
 .vote-btn:disabled, .audit-btn:disabled {
   opacity: 0.7;
   cursor: not-allowed;

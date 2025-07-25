@@ -14,6 +14,10 @@ export default function VotingPage({ userName, onLogout }) {
   const [votingState, setVotingState] = useState({ isOpen: false, type: null });
   const [hasVoted, setHasVoted] = useState(false);
   const [hasVotedAudit, setHasVotedAudit] = useState(false);
+  const [auditVotesCount, setAuditVotesCount] = useState(() => {
+    const stored = localStorage.getItem('auditVotesCount');
+    return stored ? parseInt(stored, 10) : 0;
+  });
   const [voteCounts, setVoteCounts] = useState({ yes: 0, no: 0 });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState(null);
@@ -184,6 +188,7 @@ export default function VotingPage({ userName, onLogout }) {
   };
 
   const handleAuditVote = async () => {
+    if (auditVotesCount >= 3) return;
     if (!votingState.isOpen || !activeAuditMember || hasVotedAudit) return;
     
     try {
@@ -204,6 +209,10 @@ export default function VotingPage({ userName, onLogout }) {
         throw new Error(errMsg);
       }
       setHasVotedAudit(true);
+      const newCount = auditVotesCount + 1;
+      setAuditVotesCount(newCount);
+      localStorage.setItem('auditVotesCount', newCount);
+    
     } catch (error) {
       setError(error.message);
     } finally {
@@ -316,7 +325,11 @@ export default function VotingPage({ userName, onLogout }) {
 
             {votingState.isOpen && (
               <div className="voting-interface">
-                {hasVotedAudit ? (
+                {auditVotesCount >= 3 ? (
+                  <button className="vote-btn exhausted-btn" disabled>
+                    You have exhausted your voting attempt
+                  </button>
+                ) : hasVotedAudit ? (
                   <div className="vote-confirmation">
                     <FaCheck className="confirmation-icon" />
                     <h3>Thank you for voting!</h3>
