@@ -15,9 +15,10 @@ export default function VotingPage({ userName, onLogout }) {
   const [hasVoted, setHasVoted] = useState(false);
   const [hasVotedAudit, setHasVotedAudit] = useState(false);
   const [auditVotesCount, setAuditVotesCount] = useState(() => {
-    const stored = localStorage.getItem('auditVotesCount');
+    const stored = sessionStorage.getItem('auditVotesCount');
     return stored ? parseInt(stored, 10) : 0;
   });
+  const [exhaustedLimit, setExhaustedLimit] = useState(false);
   const [voteCounts, setVoteCounts] = useState({ yes: 0, no: 0 });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState(null);
@@ -188,7 +189,10 @@ export default function VotingPage({ userName, onLogout }) {
   };
 
   const handleAuditVote = async () => {
-    if (auditVotesCount >= 3) return;
+    if (auditVotesCount >= 3) {
+      setExhaustedLimit(true);
+      return;
+    }
     if (!votingState.isOpen || !activeAuditMember || hasVotedAudit) return;
     
     try {
@@ -211,7 +215,8 @@ export default function VotingPage({ userName, onLogout }) {
       setHasVotedAudit(true);
       const newCount = auditVotesCount + 1;
       setAuditVotesCount(newCount);
-      localStorage.setItem('auditVotesCount', newCount);
+      sessionStorage.setItem('auditVotesCount', newCount);
+      if (newCount >= 3) setExhaustedLimit(true);
     
     } catch (error) {
       setError(error.message);
@@ -325,7 +330,7 @@ export default function VotingPage({ userName, onLogout }) {
 
             {votingState.isOpen && (
               <div className="voting-interface">
-                {(auditVotesCount >= 3 && !hasVotedAudit) ? (
+                {exhaustedLimit ? (
                   <button className="vote-btn exhausted-btn" disabled>
                     You have exhausted your voting attempt (you can only vote for 3 candidates)
                   </button>
