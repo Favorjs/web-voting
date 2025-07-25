@@ -325,9 +325,9 @@ export default function VotingPage({ userName, onLogout }) {
 
             {votingState.isOpen && (
               <div className="voting-interface">
-                {auditVotesCount >= 3 ? (
+                {(auditVotesCount >= 3 && !hasVotedAudit) ? (
                   <button className="vote-btn exhausted-btn" disabled>
-                    You have exhausted your voting attempt
+                    You have exhausted your voting attempt (you can only vote for 3 candidates)
                   </button>
                 ) : hasVotedAudit ? (
                   <div className="vote-confirmation">
