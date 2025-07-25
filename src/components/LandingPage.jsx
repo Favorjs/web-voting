@@ -9,8 +9,8 @@ export default function LandingPage({ userName, onLogout, onStartVoting }) {
       <header className="landing-header">
         <div className="header-content">
           <div className="user-greeting">
-            <h1 className="welcome-message">Welcome back,</h1>
-            <p className="username">{userName}</p>
+            <h1 className="welcome-message">Welcome,</h1>
+            <span className="username small-username">{userName}</span>
           </div>
           <button onClick={onLogout} className="logout-button">
             <FaSignOutAlt className="button-icon" />
