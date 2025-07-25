@@ -339,11 +339,16 @@
 @media (max-width: 600px) {
   .login-main.wide-layout {
     padding: 0.5rem;
+    margin-left: 3vw;
+    margin-right: 3vw;
   }
   .login-card {
     padding: 1.2rem 0.7rem;
     max-width: 95vw;
     min-width: unset;
+    margin-left: 0;
+    margin-right: 0;
+    box-sizing: border-box;
   }
   .header-content {
     flex-direction: column;
@@ -370,9 +375,13 @@
   .login-card {
     padding: 0.7rem 0.3rem;
     max-width: 99vw;
+    margin-left: 2vw;
+    margin-right: 2vw;
   }
   .login-main.wide-layout {
     padding: 0.2rem;
+    margin-left: 2vw;
+    margin-right: 2vw;
   }
 }
 

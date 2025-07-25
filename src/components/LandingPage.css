@@ -319,6 +319,22 @@
   }
 }
 
+@media (max-width: 600px) {
+  .landing-main {
+    padding: 1.2rem 0.2rem;
+    gap: 1.2rem;
+    margin-left: 3vw;
+    margin-right: 3vw;
+  }
+  .info-card {
+    max-width: 98vw;
+    padding: 0;
+    margin-left: 0;
+    margin-right: 0;
+    box-sizing: border-box;
+  }
+}
+
 @media (max-width: 480px) {
   .landing-main {
     padding: 1rem 0.2rem;
@@ -344,5 +360,19 @@
     padding: 0.9rem 0.2rem;
     font-size: 1rem;
     border-radius: 30px;
+  }
+}
+
+@media (max-width: 400px) {
+  .landing-main {
+    padding: 0.5rem 0.1rem;
+    margin-left: 2vw;
+    margin-right: 2vw;
+  }
+  .info-card {
+    max-width: 99vw;
+    border-radius: 10px;
+    margin-left: 2vw;
+    margin-right: 2vw;
   }
 }
