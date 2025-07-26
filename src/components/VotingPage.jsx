@@ -20,6 +20,22 @@ export default function VotingPage({ userName, onLogout }) {
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
+
+
+// Add this useEffect near your other useEffects
+useEffect(() => {
+  if (activeAuditMember) {
+    checkAuditVoteStatus(); // This will update auditVotesLeft
+  }
+}, [activeAuditMember]); // Re-run when activeAuditMember changes
+
+
+
+
+
+
+
+
   useEffect(() => {
     const checkAuthAndFetchData = async () => {
       try {
@@ -145,17 +161,33 @@ export default function VotingPage({ userName, onLogout }) {
     setHasVoted(data.hasVoted);
   };
 
+  // const checkAuditVoteStatus = async () => {
+  //   const res = await fetch(`${API_URL}/api/check-audit-vote`, {
+  //     credentials: 'include'
+  //   });
+  //   const data = await res.json();
+  //   setHasVotedAudit(data.hasVoted);
+  //   if (data.totalVotes !== undefined) {
+  //     setAuditVotesLeft(Math.max(0, 3 - data.totalVotes));
+  //   }
+  // };
+
+
+
   const checkAuditVoteStatus = async () => {
-    const res = await fetch(`${API_URL}/api/check-audit-vote`, {
-      credentials: 'include'
-    });
-    const data = await res.json();
-    setHasVotedAudit(data.hasVoted);
-    if (data.totalVotes !== undefined) {
-      setAuditVotesLeft(Math.max(0, 3 - data.totalVotes));
+    try {
+      const res = await fetch(`${API_URL}/api/check-audit-vote`, {
+        credentials: 'include'
+      });
+      const data = await res.json();
+      setHasVotedAudit(data.hasVoted);
+      if (data.totalVotes !== undefined) {
+        setAuditVotesLeft(Math.max(0, 3 - data.totalVotes));
+      }
+    } catch (error) {
+      console.error('Error checking audit vote status:', error);
     }
   };
-
   const handleVote = async (decision) => {
     if (!votingState.isOpen || !activeResolution || hasVoted) return;
   
@@ -187,8 +219,40 @@ export default function VotingPage({ userName, onLogout }) {
     }
   };
 
+  // const handleAuditVote = async () => {
+  //   if (!votingState.isOpen || !activeAuditMember || auditVotesLeft === 0 || hasVotedAudit) return;
+    
+  //   try {
+  //     setIsSubmitting(true);
+  //     const response = await fetch(`${API_URL}/api/audit-vote`, {
+  //       method: 'POST',
+  //       headers: { 'Content-Type': 'application/json' },
+  //       credentials: 'include',
+  //       body: JSON.stringify({ committeeId: activeAuditMember.id })
+  //     });
+      
+  //     if (!response.ok) {
+  //       let errMsg = 'Failed to submit vote';
+  //       try {
+  //         const errJson = await response.json();
+  //         if (errJson?.error) errMsg = errJson.error;
+  //       } catch (e) {}
+  //       throw new Error(errMsg);
+  //     }
+  //     setHasVotedAudit(true);
+  //     setAuditVotesLeft(prev => Math.max(0, prev - 1));
+  //   } catch (error) {
+  //     setError(error.message);
+  //   } finally {
+  //     setIsSubmitting(false);
+  //   }
+  // };
+
+
+
+
   const handleAuditVote = async () => {
-    if (!votingState.isOpen || !activeAuditMember || auditVotesLeft === 0 || hasVotedAudit) return;
+    if (!votingState.isOpen || !activeAuditMember || hasVotedAudit) return;
     
     try {
       setIsSubmitting(true);
@@ -200,21 +264,19 @@ export default function VotingPage({ userName, onLogout }) {
       });
       
       if (!response.ok) {
-        let errMsg = 'Failed to submit vote';
-        try {
-          const errJson = await response.json();
-          if (errJson?.error) errMsg = errJson.error;
-        } catch (e) {}
-        throw new Error(errMsg);
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Failed to submit vote');
       }
-      setHasVotedAudit(true);
-      setAuditVotesLeft(prev => Math.max(0, prev - 1));
+  
+      setHasVotedAudit(true); // Only update this, don't modify auditVotesLeft here
+  
     } catch (error) {
       setError(error.message);
     } finally {
       setIsSubmitting(false);
     }
   };
+
 
   if (isLoading) {
     return (
@@ -323,15 +385,15 @@ export default function VotingPage({ userName, onLogout }) {
               <div className="voting-interface">
                 {auditVotesLeft === 0 ? (
                   <button className="vote-btn audit-btn exhausted" disabled style={{backgroundColor:'#f44336'}}>
-                    You have voted 3 times, voting power exhausted
+                Thank you for your 3rd vote, so you have exhausted your voting power
                   </button>
                 ) : hasVotedAudit ? (
                   <div className="vote-confirmation">
                     <FaCheck className="confirmation-icon" />
-                    <h3>Thank you for voting!</h3>
+                    <h3>Thank you for voting!</h3> 
                     
                   </div>
-                ) : (
+                ) : ( 
                   <div className="vote-buttons">
                     <button 
                       className="vote-btn audit-btn"
