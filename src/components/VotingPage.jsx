@@ -14,11 +14,7 @@ export default function VotingPage({ userName, onLogout }) {
   const [votingState, setVotingState] = useState({ isOpen: false, type: null });
   const [hasVoted, setHasVoted] = useState(false);
   const [hasVotedAudit, setHasVotedAudit] = useState(false);
-  const [auditVotesCount, setAuditVotesCount] = useState(() => {
-    const stored = sessionStorage.getItem('auditVotesCount');
-    return stored ? parseInt(stored, 10) : 0;
-  });
-  const [exhaustedLimit, setExhaustedLimit] = useState(false);
+  const [auditVotesLeft, setAuditVotesLeft] = useState(3); // 3 votes per user
   const [voteCounts, setVoteCounts] = useState({ yes: 0, no: 0 });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState(null);
@@ -155,6 +151,9 @@ export default function VotingPage({ userName, onLogout }) {
     });
     const data = await res.json();
     setHasVotedAudit(data.hasVoted);
+    if (data.totalVotes !== undefined) {
+      setAuditVotesLeft(Math.max(0, 3 - data.totalVotes));
+    }
   };
 
   const handleVote = async (decision) => {
@@ -189,11 +188,7 @@ export default function VotingPage({ userName, onLogout }) {
   };
 
   const handleAuditVote = async () => {
-    if (auditVotesCount >= 3) {
-      setExhaustedLimit(true);
-      return;
-    }
-    if (!votingState.isOpen || !activeAuditMember || hasVotedAudit) return;
+    if (!votingState.isOpen || !activeAuditMember || auditVotesLeft === 0 || hasVotedAudit) return;
     
     try {
       setIsSubmitting(true);
@@ -213,11 +208,7 @@ export default function VotingPage({ userName, onLogout }) {
         throw new Error(errMsg);
       }
       setHasVotedAudit(true);
-      const newCount = auditVotesCount + 1;
-      setAuditVotesCount(newCount);
-      sessionStorage.setItem('auditVotesCount', newCount);
-      if (newCount >= 3) setExhaustedLimit(true);
-    
+      setAuditVotesLeft(prev => Math.max(0, prev - 1));
     } catch (error) {
       setError(error.message);
     } finally {
@@ -330,9 +321,9 @@ export default function VotingPage({ userName, onLogout }) {
 
             {votingState.isOpen && (
               <div className="voting-interface">
-                {exhaustedLimit ? (
-                  <button className="vote-btn exhausted-btn" disabled>
-                    You have exhausted your voting attempt (you can only vote for 3 candidates)
+                {auditVotesLeft === 0 ? (
+                  <button className="vote-btn audit-btn exhausted" disabled style={{backgroundColor:'#f44336'}}>
+                    You have voted 3 times, voting power exhausted
                   </button>
                 ) : hasVotedAudit ? (
                   <div className="vote-confirmation">
