@@ -425,3 +425,10 @@
 }
 
 /* Rest of the existing styles remain the same */
+
+.exhausted-message {
+  color: #f44336;
+  font-size: 0.9em;
+  margin-top: 10px;
+  font-weight: 500;
+}

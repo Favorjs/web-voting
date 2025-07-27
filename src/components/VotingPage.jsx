@@ -383,32 +383,47 @@ useEffect(() => {
 
             {votingState.isOpen && (
               <div className="voting-interface">
-                {auditVotesLeft === 0 ? (
-                  <button className="vote-btn audit-btn exhausted" disabled style={{backgroundColor:'#f44336'}}>
-                Thank you for your 3rd vote, so you have exhausted your voting power
-                  </button>
-                ) : hasVotedAudit ? (
-                  <div className="vote-confirmation">
-                    <FaCheck className="confirmation-icon" />
-                    <h3>Thank you for voting!</h3> 
-                    
-                  </div>
-                ) : ( 
-                  <div className="vote-buttons">
-                    <button 
-                      className="vote-btn audit-btn"
-                      onClick={handleAuditVote}
-                      disabled={isSubmitting}
-                    >
-                      {isSubmitting ? 'Submitting...' : (
-                        <>
-                         <FaHandPaper /> Vote for Candidate
-                        </>
-                      )}
-                    </button>
-                  </div>
-                )}
-              </div>
+               
+               
+               {/* Inside the voting-interface div, replace the current conditional rendering with: */}
+{auditVotesLeft === 0 ? (
+  hasVotedAudit ? (
+    // Show this after 3rd vote on the same candidate
+    <div className="vote-confirmation">
+      <FaCheck className="confirmation-icon" />
+      <h3>Thank you for voting!</h3>
+      <p className="exhausted-message">Your third vote has been recorded, you have exhausted your voting power</p>
+    </div>
+  ) : (
+    // Show this for new candidates after 3 votes
+    <button className="vote-btn audit-btn exhausted" disabled style={{backgroundColor:'#f44336'}}>
+      You have exhausted your voting power
+    </button>
+  )
+) : hasVotedAudit ? (
+  // Show this for 1st and 2nd votes
+  <div className="vote-confirmation">
+    <FaCheck className="confirmation-icon" />
+    <h3>Thank you for voting!</h3>
+  </div>
+) : (
+  // Show vote button
+  <div className="vote-buttons">
+    <button 
+      className="vote-btn audit-btn"
+      onClick={handleAuditVote}
+      disabled={isSubmitting}
+    >
+      {isSubmitting ? 'Submitting...' : <><FaHandPaper /> Vote for Candidate</>}
+    </button>
+  </div>
+)}
+               
+               
+               
+               
+               
+                             </div>
             )}
           </div>
         ) : (
