@@ -27,7 +27,7 @@ useEffect(() => {
   if (activeAuditMember) {
     checkAuditVoteStatus(); // This will update auditVotesLeft
   }
-}, [activeAuditMember]); // Re-run when activeAuditMember changes
+}, [activeAuditMember, checkAuditVoteStatus]); // Re-run when activeAuditMember changes
 
 
 
@@ -174,7 +174,7 @@ useEffect(() => {
 
 
 
-  const checkAuditVoteStatus = async () => {
+  const checkAuditVoteStatus = useCallback(async () => {
     try {
       const res = await fetch(`${API_URL}/api/check-audit-vote`, {
         credentials: 'include'
@@ -187,7 +187,8 @@ useEffect(() => {
     } catch (error) {
       console.error('Error checking audit vote status:', error);
     }
-  };
+  }, []);
+
   const handleVote = async (decision) => {
     if (!votingState.isOpen || !activeResolution || hasVoted) return;
   
@@ -268,10 +269,18 @@ useEffect(() => {
         throw new Error(errorData.error || 'Failed to submit vote');
       }
   
-      setHasVotedAudit(true); // Only update this, don't modify auditVotesLeft here
-  
+      // Immediately update local state optimistically
+      const newVotesLeft = auditVotesLeft - 1;
+      setAuditVotesLeft(newVotesLeft);
+      setHasVotedAudit(true);
+      
+      // Then sync with server
+      await checkAuditVoteStatus();
+      
     } catch (error) {
       setError(error.message);
+      // Re-fetch to ensure UI is in sync with server
+      await checkAuditVoteStatus();
     } finally {
       setIsSubmitting(false);
     }
@@ -383,7 +392,12 @@ useEffect(() => {
 
             {votingState.isOpen && (
               <div className="voting-interface">
-               
+               {isSubmitting && (
+    <div className="submitting-overlay">
+      <div className="loading-spinner"></div>
+    </div>
+  )}
+
                
                {/* Inside the voting-interface div, replace the current conditional rendering with: */}
 {auditVotesLeft === 0 ? (
@@ -443,6 +457,10 @@ useEffect(() => {
 
             {votingState.isOpen && (
               <div className="voting-interface">
+
+
+
+
                 {hasVoted ? (
                   <div className="vote-confirmation">
                     <FaCheck className="confirmation-icon" />
