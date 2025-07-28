@@ -23,17 +23,6 @@ export default function VotingPage({ userName, onLogout }) {
 
 
 // Add this useEffect near your other useEffects
-useEffect(() => {
-  if (activeAuditMember) {
-    checkAuditVoteStatus(); // This will update auditVotesLeft
-  }
-}, [activeAuditMember, checkAuditVoteStatus]); // Re-run when activeAuditMember changes
-
-
-
-
-
-
 
 
   useEffect(() => {
