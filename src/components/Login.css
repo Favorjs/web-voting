@@ -16,7 +16,7 @@
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  background: linear-gradient(135deg, #f8f9fa 60%, #e9ecef 100%);
+  background: white;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 
 }
@@ -25,17 +25,21 @@
 .login-header {
   background: white;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  width: 100%;
+  margin: 0;
+  padding: 0;
 }
 
 .header-content {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 1rem 2rem;
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  padding: 0 1.2rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
- height:10vh;
-  
+  height: 10vh;
+  box-sizing: border-box;
 }
 
 .logo {
@@ -90,7 +94,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 2rem;
+  padding: 2rem 0.5rem;
   max-width: 1200px;
   margin: 0 auto;
   width: 100%; /* was 50%, now 100% for better mobile fit */
@@ -112,7 +116,12 @@
 .card-header {
   text-align: center;
   margin-bottom: 1.2rem;
- 
+  max-width: 300px;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 1rem 0.5rem;
+  border-radius: 1rem;
+  background: #212529;
 }
 
 .icon-circle {
@@ -141,8 +150,13 @@
 
 .subtext {
   color: #fff;
-  font-size: 1rem;
+  font-size: 0.95rem;
   margin-top: 0.5rem;
+  max-width: 90vw;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 0.3rem 0.2rem;
+  line-height: 1.3;
 }
 
 /* Form Styles */
@@ -338,12 +352,12 @@
 
 @media (max-width: 600px) {
   .login-main.wide-layout {
-    padding: 0.5rem;
+    padding: 1.2rem 0.5rem;
     margin-left: 3vw;
     margin-right: 3vw;
   }
   .login-card {
-    padding: 1.2rem 0.7rem;
+    padding: 1.2rem 0.9rem;
     max-width: 95vw;
     min-width: unset;
     margin-left: 0;
@@ -369,36 +383,64 @@
   .footer-content p {
     font-size: 0.8rem;
   }
+  .card-header {
+    max-width: 80vw;
+    padding: 0.7rem 0.2rem;
+  }
+  .subtext {
+    font-size: 0.9rem;
+    padding: 0.2rem 0.1rem;
+  }
 }
 
 @media (max-width: 400px) {
   .login-card {
-    padding: 0.7rem 0.3rem;
+    padding: 0.9rem 0.5rem;
     max-width: 99vw;
     margin-left: 2vw;
     margin-right: 2vw;
   }
   .login-main.wide-layout {
-    padding: 0.2rem;
+    padding: 0.7rem 0.2rem;
     margin-left: 2vw;
     margin-right: 2vw;
   }
 }
 
-.smart-input-field, .login-button {
+.smart-input-field {
   width: 100%;
+  padding: 1rem 1.25rem 1rem 1rem;
+  border: 1px solid var(--light-gray);
+  border-radius: 0.75rem;
+  font-size: 1rem;
+  transition: all 0.2s ease;
   box-sizing: border-box;
+  text-align: left;
 }
 
-.login-button {
-  font-size: 1.1rem;
-  padding: 1rem 0.5rem;
-  border-radius: 0.7rem;
-  margin-top: 0.7rem;
+.input-icon {
+  display: none;
 }
 
 .input-hint {
   font-size: 0.85rem;
   color: #888;
   margin-top: 0.2rem;
+  text-align: left;
+  padding-left: 0.1rem;
+}
+
+.card-header {
+  max-width: 250px;
+  padding: 0.7rem 0.3rem;
+}
+
+.login-button {
+  background: linear-gradient(90deg, #107b5f 60%, #2a9d8f 100%);
+  font-size: 1.15rem;
+  padding: 1.1rem;
+  border-radius: 0.8rem;
+  margin-top: 0.7rem;
+  font-weight: 700;
+  box-shadow: 0 2px 8px rgba(16,123,95,0.13);
 }

@@ -80,9 +80,6 @@ export default function LoginPage({ onLogin }) {
           <form onSubmit={handleSubmit} className="login-form">
             <div className="input-container">
               <div className="form-group smart-input">
-                <div className="input-icon">
-                  {inputIcon}
-                </div>
                 <input
                   id="identifier"
                   type="text"
@@ -93,7 +90,7 @@ export default function LoginPage({ onLogin }) {
                   className="smart-input-field"
                 />
                 <div className="input-hint">
-                  {inputIcon.type === FaEnvelope ? 'your.email@example.com' : '+234 (123) 456-7890'}
+                  {/@/.test(identifier) ? 'your.email@example.com' : '+234 (123) 456-7890'}
                 </div>
               </div>
             </div>

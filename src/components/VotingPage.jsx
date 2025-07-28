@@ -22,8 +22,6 @@ export default function VotingPage({ userName, onLogout }) {
 
 
 
-// Add this useEffect near your other useEffects
-
 
   useEffect(() => {
     const checkAuthAndFetchData = async () => {
