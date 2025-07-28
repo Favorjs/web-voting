@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect,useCallback } from 'react';
 import { FaSignOutAlt, FaVoteYea, FaCheck, FaTimes, FaHandPaper, FaThumbsUp } from 'react-icons/fa';
 import { io } from 'socket.io-client';
 import './VotingPage.css';
@@ -174,20 +174,28 @@ useEffect(() => {
 
 
 
-  const checkAuditVoteStatus = useCallback(async () => {
-    try {
-      const res = await fetch(`${API_URL}/api/check-audit-vote`, {
-        credentials: 'include'
-      });
-      const data = await res.json();
-      setHasVotedAudit(data.hasVoted);
-      if (data.totalVotes !== undefined) {
-        setAuditVotesLeft(Math.max(0, 3 - data.totalVotes));
-      }
-    } catch (error) {
-      console.error('Error checking audit vote status:', error);
+ // 1. First, declare the function with useCallback
+const checkAuditVoteStatus = useCallback(async () => {
+  try {
+    const res = await fetch(`${API_URL}/api/check-audit-vote`, {
+      credentials: 'include'
+    });
+    const data = await res.json();
+    setHasVotedAudit(data.hasVoted);
+    if (data.totalVotes !== undefined) {
+      setAuditVotesLeft(Math.max(0, 3 - data.totalVotes));
     }
-  }, []);
+  } catch (error) {
+    console.error('Error checking audit vote status:', error);
+  }
+}, []); // No dependencies needed since we're using the setter functions
+
+// 2. Then use it in useEffect
+useEffect(() => {
+  if (activeAuditMember) {
+    checkAuditVoteStatus();
+  }
+}, [activeAuditMember, checkAuditVoteStatus]);
 
   const handleVote = async (decision) => {
     if (!votingState.isOpen || !activeResolution || hasVoted) return;

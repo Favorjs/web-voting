@@ -63,7 +63,7 @@ export default function LoginPage({ onLogin }) {
             <span>E-Voting System</span>
           </div>
           <nav className="main-nav">
-            <a href="#" className="nav-link"><FaHeadphones /> Support</a>
+            <a href="https://wa.me/2347046126698" className="nav-link"><FaHeadphones /> Support</a>
           </nav>
         </div>
       </header>
