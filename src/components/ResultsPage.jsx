@@ -275,6 +275,20 @@ const fetchActiveAuditMember = async () => {
     }
   };
 
+
+
+  const yesCount = Number(voteCounts.yes) + Number(Proxy_votes);
+  const noCount = Number(voteCounts.no);
+  const totalPercentage = yesCount + noCount;
+  
+  const yesPercentage = totalPercentage > 0 ? ((yesCount / totalPercentage) * 100).toFixed(2) : "0.00";
+  const noPercentage = totalPercentage > 0 ? ((noCount / totalPercentage) * 100).toFixed(2) : "0.00";
+  
+  // To display:
+  console.log(`Yes: ${yesPercentage}%`);
+  console.log(`No: ${noPercentage}%`);
+
+
   const fetchVoteCounts = async (resolutionId) => {
     try {
       const res = await fetch(`${API_URL}/api/results/${resolutionId}`);
@@ -474,13 +488,13 @@ const fetchActiveAuditMember = async () => {
               <div class="results-summary">
                 <div className="summary-box for">
                   <h4>FOR</h4>
-                  <p><span className="label">Percentage:</span> <strong>{voteCounts.percentageYes}%</strong></p>
+                  <p><span className="label">Percentage:</span> <strong>{yesPercentage}%</strong></p>
                   <p><span className="label">Count:</span> <strong>{(Number(voteCounts.yes)+Number(Proxy_votes)).toLocaleString()}</strong></p>
                   <p><span className="label">Holdings:</span> <strong>{(Number(Proxy_Holdings)+Number(voteCounts.yesHoldings)).toLocaleString()}</strong></p>
                 </div>
                 <div className="summary-box against">
                   <h4>AGAINST</h4>
-                  <p><span className="label">Percentage:</span> <strong>{voteCounts.percentageNo}%</strong></p>
+                  <p><span className="label">Percentage:</span> <strong>{noPercentage}%</strong></p>
                   <p><span className="label">Count:</span> <strong>{(Number(voteCounts.no)).toLocaleString()}</strong></p>
                   <p><span className="label">Holdings:</span> <strong>{(Number(voteCounts.noHoldings)).toLocaleString()}</strong></p>
                 </div>
