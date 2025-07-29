@@ -7,8 +7,11 @@ import './ResultsPage.css';
 import { Chart as ChartJS, ArcElement, BarElement, CategoryScale, LinearScale, Tooltip, Legend } from 'chart.js';
 ChartJS.register(ArcElement, BarElement, CategoryScale, LinearScale, Tooltip, Legend);
 import { API_URL } from '../config';
-const Proxy_votes = 0;
-const Proxy_Holdings = 0;
+
+const DEFAULT_PROXY_VOTES = 120;
+const DEFAULT_PROXY_HOLDINGS = 136789566;
+const [proxyVotes, setProxyVotes] = useState(DEFAULT_PROXY_VOTES);
+const [proxyHoldings, setProxyHoldings] = useState(DEFAULT_PROXY_HOLDINGS);
 
 export default function ResultsPage() {
   const formatTime = (s) => `${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`;
@@ -24,7 +27,7 @@ export default function ResultsPage() {
     percentageYes: 0,
     percentageNo: 0,
     totalHoldings: 0,
-    Proxy_votes,
+    Proxy_votes: proxyVotes,
     totalproxyVotes:0,
     yesHoldings: 0,
     noHoldings: 0,
@@ -86,7 +89,7 @@ export default function ResultsPage() {
           yes: data.yes,
           no: data.no,
           total: data.total,
-          totalproxyVotes: data.total + Proxy_votes,
+          totalproxyVotes: data.total + proxyVotes,
           percentageYes: data.total > 0 ? Math.round((data.yes / data.total) * 100) : 0,
           percentageNo: data.total > 0 ? Math.round((data.no / data.total) * 100) : 0,
           totalHoldings: data.totalHoldings,
@@ -277,7 +280,7 @@ const fetchActiveAuditMember = async () => {
 
 
 
-  const yesCount = Number(voteCounts.yes) + Number(Proxy_votes);
+  const yesCount = Number(voteCounts.yes) + Number(proxyVotes);
   const noCount = Number(voteCounts.no);
   const totalPercentage = yesCount + noCount;
   
@@ -315,7 +318,7 @@ const fetchActiveAuditMember = async () => {
   const resolutionChartData = {
     labels: ['For', 'Against'],
     datasets: [{
-      data: [(Number(voteCounts.yes)+Number(Proxy_votes)).toLocaleString(), (Number(voteCounts.no)).toLocaleString()],
+      data: [(Number(voteCounts.yes)+Number(proxyVotes)).toLocaleString(), (Number(voteCounts.no)).toLocaleString()],
       backgroundColor: ['#4CAF50', '#F44336'],
       hoverBackgroundColor: ['#66BB6A', '#EF5350'],
       borderWidth: 1,
@@ -489,8 +492,8 @@ const fetchActiveAuditMember = async () => {
                 <div className="summary-box for">
                   <h4>FOR</h4>
                   <p><span className="label">Percentage:</span> <strong>{yesPercentage}%</strong></p>
-                  <p><span className="label">Count:</span> <strong>{(Number(voteCounts.yes)+Number(Proxy_votes)).toLocaleString()}</strong></p>
-                  <p><span className="label">Holdings:</span> <strong>{(Number(Proxy_Holdings)+Number(voteCounts.yesHoldings)).toLocaleString()}</strong></p>
+                  <p><span className="label">Count:</span> <strong>{(Number(voteCounts.yes)+Number(proxyVotes)).toLocaleString()}</strong></p>
+                  <p><span className="label">Holdings:</span> <strong>{(Number(proxyHoldings)+Number(voteCounts.yesHoldings)).toLocaleString()}</strong></p>
                 </div>
                 <div className="summary-box against">
                   <h4>AGAINST</h4>
@@ -520,8 +523,8 @@ const fetchActiveAuditMember = async () => {
                 <tbody>
                   <tr>
                     <td>Proxy</td>
-                    <td className='for-column'>{(Number(Proxy_votes)).toLocaleString()}</td>
-                    <td className='for-column'>{(Number(Proxy_Holdings)).toLocaleString()}</td>
+                    <td className='for-column'>{(Number(proxyVotes)).toLocaleString()}</td>
+                    <td className='for-column'>{(Number(proxyHoldings)).toLocaleString()}</td>
                     <td className='for-column'>100%</td>
                     <td className='against-column'>0</td>
                     <td className='against-column'>0</td>
@@ -538,8 +541,8 @@ const fetchActiveAuditMember = async () => {
                   </tr>
                   <tr>
                     <td><strong>TOTAL</strong></td>
-                    <td className='for-column'><strong>{(Number(voteCounts.yes)+Number(Proxy_votes)).toLocaleString()}</strong></td>
-                    <td className='for-column'><strong>{(Number(Proxy_Holdings)+Number(voteCounts.yesHoldings)).toLocaleString()}</strong></td>
+                    <td className='for-column'><strong>{(Number(voteCounts.yes)+Number(proxyVotes)).toLocaleString()}</strong></td>
+                    <td className='for-column'><strong>{(Number(proxyHoldings)+Number(voteCounts.yesHoldings)).toLocaleString()}</strong></td>
                     <td className='for-column'><strong>{yesPercentage}%</strong></td>
                     <td className='against-column'><strong>0</strong></td>
                     <td className='against-column'><strong>{(Number(voteCounts.noHoldings)).toLocaleString()}</strong></td>
@@ -552,6 +555,10 @@ const fetchActiveAuditMember = async () => {
           <button onClick={downloadPDF} className="pdf-button">
             Download PDF
           </button>
+          <button className="proxy-toggle-btn" onClick={() => setProxyVotes(0)}>Disable Proxy Votes</button>
+          <button className="proxy-toggle-btn" onClick={() => setProxyVotes(DEFAULT_PROXY_VOTES)}>Enable Proxy Votes</button>
+          <button className="proxy-toggle-btn" onClick={() => setProxyHoldings(0)}>Disable Proxy Holdings</button>
+          <button className="proxy-toggle-btn" onClick={() => setProxyHoldings(DEFAULT_PROXY_HOLDINGS)}>Enable Proxy Holdings</button>
         </div>
       )}
     </div>

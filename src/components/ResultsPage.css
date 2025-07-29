@@ -348,3 +348,22 @@ body {
  }
 
 /* Rest of the existing styles remain the same */
+
+/* Proxy Toggle Buttons */
+.proxy-toggle-btn {
+  background: linear-gradient(90deg, #107b5f 60%, #2a9d8f 100%);
+  color: #fff;
+  border: none;
+  border-radius: 0.7rem;
+  padding: 0.7rem 1.2rem;
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0.3rem 0.5rem 0.3rem 0;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(16,123,95,0.13);
+  transition: background 0.2s, transform 0.2s;
+}
+.proxy-toggle-btn:hover {
+  background: linear-gradient(90deg, #2a9d8f 60%, #107b5f 100%);
+  transform: translateY(-2px) scale(1.04);
+}
