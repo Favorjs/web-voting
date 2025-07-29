@@ -7,8 +7,8 @@ import './ResultsPage.css';
 import { Chart as ChartJS, ArcElement, BarElement, CategoryScale, LinearScale, Tooltip, Legend } from 'chart.js';
 ChartJS.register(ArcElement, BarElement, CategoryScale, LinearScale, Tooltip, Legend);
 import { API_URL } from '../config';
-const Proxy_votes = 120;
-const Proxy_Holdings = 136789566;
+const Proxy_votes = 0;
+const Proxy_Holdings = 0;
 
 export default function ResultsPage() {
   const formatTime = (s) => `${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`;
