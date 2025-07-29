@@ -1,4 +1,5 @@
 import { createContext, useState, useContext, useEffect } from 'react';
+import { io } from 'socket.io-client';
 import { API_URL } from '../config';
 
 const ProxyContext = createContext();
@@ -8,6 +9,39 @@ export const ProxyProvider = ({ children }) => {
   const [proxyHoldings, setProxyHoldings] = useState(136789566);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [socket, setSocket] = useState(null);
+
+  // Initialize socket connection
+  useEffect(() => {
+    const newSocket = io(API_URL, {
+      reconnectionAttempts: 5,
+      reconnectionDelay: 1000,
+    });
+    setSocket(newSocket);
+
+    // Clean up on unmount
+    return () => {
+      if (newSocket) {
+        newSocket.disconnect();
+      }
+    };
+  }, []);
+
+  // Set up socket event listeners
+  useEffect(() => {
+    if (!socket) return;
+
+    const handleProxyUpdate = (settings) => {
+      setProxyVotes(settings.proxyVotes);
+      setProxyHoldings(settings.proxyHoldings);
+    };
+
+    socket.on('proxySettingsUpdated', handleProxyUpdate);
+
+    return () => {
+      socket.off('proxySettingsUpdated', handleProxyUpdate);
+    };
+  }, [socket]);
 
   // Load proxy settings from server on mount
   useEffect(() => {
@@ -15,9 +49,11 @@ export const ProxyProvider = ({ children }) => {
       try {
         const response = await fetch(`${API_URL}/api/proxy-settings`);
         if (response.ok) {
-          const data = await response.json();
-          setProxyVotes(data.proxyVotes);
-          setProxyHoldings(data.proxyHoldings);
+          const { data } = await response.json();
+          if (data) {
+            setProxyVotes(data.proxyVotes);
+            setProxyHoldings(data.proxyHoldings);
+          }
         }
       } catch (err) {
         console.error('Failed to load proxy settings:', err);
@@ -38,6 +74,7 @@ export const ProxyProvider = ({ children }) => {
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify({
           proxyVotes: newVotes,
           proxyHoldings: newHoldings,
@@ -48,13 +85,16 @@ export const ProxyProvider = ({ children }) => {
         throw new Error('Failed to update proxy settings');
       }
 
-      setProxyVotes(newVotes);
-      setProxyHoldings(newHoldings);
-      return true;
+      const { data } = await response.json();
+      
+      // The server will broadcast the update via WebSocket,
+      // which will trigger the state update through the socket listener
+      
+      return { success: true, data };
     } catch (err) {
       console.error('Error updating proxy settings:', err);
       setError('Failed to update proxy settings');
-      return false;
+      return { success: false, error: err.message };
     }
   };
 
