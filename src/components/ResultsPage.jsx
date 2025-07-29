@@ -45,6 +45,17 @@ const [proxyHoldings, setProxyHoldings] = useState(DEFAULT_PROXY_HOLDINGS);
   const [socket, setSocket] = useState(null);
   const { proxyEnabled } = useProxy();
 
+  // Add effect to update proxyVotes and proxyHoldings when proxyEnabled changes
+  useEffect(() => {
+    if (proxyEnabled) {
+      setProxyVotes(DEFAULT_PROXY_VOTES);
+      setProxyHoldings(DEFAULT_PROXY_HOLDINGS);
+    } else {
+      setProxyVotes(0);
+      setProxyHoldings(0);
+    }
+  }, [proxyEnabled]);
+
   useEffect(() => {
     const newSocket = io(API_URL, {
       reconnectionAttempts: 5,
