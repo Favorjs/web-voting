@@ -7,6 +7,7 @@ import './ResultsPage.css';
 import { Chart as ChartJS, ArcElement, BarElement, CategoryScale, LinearScale, Tooltip, Legend } from 'chart.js';
 ChartJS.register(ArcElement, BarElement, CategoryScale, LinearScale, Tooltip, Legend);
 import { API_URL } from '../config';
+import { useProxy } from '../contexts/ProxyContext';
 
 const DEFAULT_PROXY_VOTES = 120;
 const DEFAULT_PROXY_HOLDINGS = 136789566;
@@ -22,8 +23,7 @@ export default function ResultsPage() {
   const [activeAuditMember, setActiveAuditMember] = useState(null);
   const [timeLeft, setTimeLeft] = useState(0);
   const [isVotingOpen, setIsVotingOpen] = useState(false);
-  const [proxyVotes, setProxyVotes] = useState(DEFAULT_PROXY_VOTES);
-const [proxyHoldings, setProxyHoldings] = useState(DEFAULT_PROXY_HOLDINGS);
+  const { proxyVotes, setProxyVotes, proxyHoldings, setProxyHoldings } = useProxy();
   const [voteCounts, setVoteCounts] = useState({ 
     yes: 0, 
     no: 0, 
