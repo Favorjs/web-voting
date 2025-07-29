@@ -432,3 +432,34 @@
     padding: 1rem;
   }
 }
+
+.proxy-toggle-buttons {
+  display: flex;
+  gap: 1rem;
+  margin: 1.5rem 0;
+}
+
+.proxy-toggle-buttons button {
+  padding: 0.6rem 1.4rem;
+  font-size: 1rem;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+
+.proxy-toggle-buttons button:first-child {
+  background: #e74c3c;
+  color: #fff;
+}
+
+.proxy-toggle-buttons button:last-child {
+  background: #27ae60;
+  color: #fff;
+}
+
+.proxy-toggle-buttons button:disabled {
+  background: #ccc;
+  color: #888;
+  cursor: not-allowed;
+}
