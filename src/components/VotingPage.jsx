@@ -20,10 +20,23 @@ export default function VotingPage({ userName, onLogout }) {
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  // Define checkAuditVoteStatus first
+  const checkAuditVoteStatus = useCallback(async () => {
+    try {
+      const res = await fetch(`${API_URL}/api/check-audit-vote`, {
+        credentials: 'include'
+      });
+      const data = await res.json();
+      setHasVotedAudit(data.hasVoted);
+      if (data.totalVotes !== undefined) {
+        setAuditVotesLeft(Math.max(0, 3 - data.totalVotes));
+      }
+    } catch (error) {
+      console.error('Error checking audit vote status:', error);
+    }
+  }, []);
 
-
-
-  // Function to handle voting state updates
+  // Define updateVotingState after its dependencies
   const updateVotingState = useCallback(async (state) => {
     setVotingState(state);
     
@@ -32,16 +45,40 @@ export default function VotingPage({ userName, onLogout }) {
       setActiveAuditMember(null);
       setHasVoted(false);
       setHasVotedAudit(false);
-    } else if (state.type === 'resolution') {
-      await fetchActiveResolution();
-      setActiveAuditMember(null);
-      await checkVoteStatus();
-    } else if (state.type === 'audit') {
-      await fetchActiveAuditMember();
-      setActiveResolution(null);
-      await checkAuditVoteStatus();
+      return;
     }
-  }, [fetchActiveResolution, fetchActiveAuditMember, checkAuditVoteStatus]);
+
+    if (state.type === 'resolution') {
+      try {
+        const res = await fetch(`${API_URL}/api/active-resolution`);
+        const json = await res.json();
+        const resolution = json?.success !== undefined ? json.data : json;
+        setActiveResolution(resolution || null);
+        setActiveAuditMember(null);
+        
+        // Check vote status for resolution
+        const voteRes = await fetch(`${API_URL}/api/check-vote`, {
+          credentials: 'include'
+        });
+        const voteData = await voteRes.json();
+        setHasVoted(voteData.hasVoted);
+      } catch (err) {
+        console.error('Error fetching resolution:', err);
+      }
+    } else if (state.type === 'audit') {
+      try {
+        const res = await fetch(`${API_URL}/api/audit-committee/active`);
+        if (res.ok) {
+          const data = await res.json();
+          setActiveAuditMember(data);
+        }
+        setActiveResolution(null);
+        await checkAuditVoteStatus();
+      } catch (err) {
+        console.error('Error fetching audit member:', err);
+      }
+    }
+  }, [checkAuditVoteStatus]);
 
   useEffect(() => {
     // Fetch initial data and check authentication
@@ -91,51 +128,45 @@ export default function VotingPage({ userName, onLogout }) {
       socket.off('voting-state', handleVotingState);
     };
 
-    socket.on('voting-state', (state) => {
-      setVotingState(state);
-      if (!state.isOpen) {
-        setActiveResolution(null);
-        setActiveAuditMember(null);
-      } else if (state.type === 'resolution') {
-        fetchActiveResolution();
-        setActiveAuditMember(null);
-      } else if (state.type === 'audit') {
-        fetchActiveAuditMember();
-        setActiveResolution(null);
+    // Handle resolution updates
+    const handleResolutionUpdate = (res) => {
+      if (votingState.type === 'resolution') {
+        setActiveResolution(res);
+        if (res) {
+          // Refresh vote status when resolution updates
+          fetch(`${API_URL}/api/check-vote`, {
+            credentials: 'include'
+          })
+            .then(res => res.json())
+            .then(data => setHasVoted(data.hasVoted))
+            .catch(console.error);
+        }
       }
-    });
+    };
 
-    socket.on('resolution-update', (res) => {
-      setActiveResolution(res);
-      if (res) checkVoteStatus();
-    });
-
-    socket.on('audit-member-updated', (member) => {
-      setActiveAuditMember(member);
-      if (member) checkAuditVoteStatus();
-    });
-
-    socket.on('vote-updated', ({ yes, no }) => {
+    // Handle vote count updates
+    const handleVoteUpdated = ({ yes, no }) => {
       setVoteCounts({ yes, no });
-    });
+    };
 
-    socket.on('agm-finished', ({ message }) => {
+    // Handle AGM finish
+    const handleAgmFinished = ({ message }) => {
       setThankYouMsg(message);
-      // Clear all voting data when AGM ends
-      setActiveResolution(null);
-      setActiveAuditMember(null);
-      setVotingState({ isOpen: false, type: null });
+      updateVotingState({ isOpen: false, type: null });
       setTimeLeft(0);
-      setHasVoted(false);
-      setHasVotedAudit(false);
-    });
+    };
 
+    // Set up all socket listeners
+    socket.on('resolution-update', handleResolutionUpdate);
+    socket.on('vote-updated', handleVoteUpdated);
+    socket.on('agm-finished', handleAgmFinished);
+
+    // Clean up all socket listeners
     return () => {
-      socket.off('voting-state');
-      socket.off('resolution-update');
-      socket.off('audit-member-updated');
-      socket.off('vote-updated');
-      socket.off('agm-finished');
+      socket.off('voting-state', handleVotingState);
+      socket.off('resolution-update', handleResolutionUpdate);
+      socket.off('vote-updated', handleVoteUpdated);
+      socket.off('agm-finished', handleAgmFinished);
     };
   }, []);
 
@@ -203,20 +234,20 @@ export default function VotingPage({ userName, onLogout }) {
 
 
  // 1. First, declare the function with useCallback
-const checkAuditVoteStatus = useCallback(async () => {
-  try {
-    const res = await fetch(`${API_URL}/api/check-audit-vote`, {
-      credentials: 'include'
-    });
-    const data = await res.json();
-    setHasVotedAudit(data.hasVoted);
-    if (data.totalVotes !== undefined) {
-      setAuditVotesLeft(Math.max(0, 3 - data.totalVotes));
-    }
-  } catch (error) {
-    console.error('Error checking audit vote status:', error);
-  }
-}, []); // No dependencies needed since we're using the setter functions
+// const checkAuditVoteStatus = useCallback(async () => {
+//   try {
+//     const res = await fetch(`${API_URL}/api/check-audit-vote`, {
+//       credentials: 'include'
+//     });
+//     const data = await res.json();
+//     setHasVotedAudit(data.hasVoted);
+//     if (data.totalVotes !== undefined) {
+//       setAuditVotesLeft(Math.max(0, 3 - data.totalVotes));
+//     }
+//   } catch (error) {
+//     console.error('Error checking audit vote status:', error);
+//   }
+// }, []); // No dependencies needed since we're using the setter functions
 
 // 2. Then use it in useEffect
 useEffect(() => {
