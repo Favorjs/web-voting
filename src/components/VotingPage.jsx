@@ -24,7 +24,8 @@ export default function VotingPage({ userName, onLogout }) {
 
 
   useEffect(() => {
-    const checkAuthAndFetchData = async () => {
+    // Fetch initial data and check authentication
+    const initializeApp = async () => {
       try {
         const authCheck = await fetch(`${API_URL}/api/check-vote`, {
           method: 'GET',
@@ -37,8 +38,22 @@ export default function VotingPage({ userName, onLogout }) {
           return;
         }
 
-        await fetchActiveResolution();
-        await fetchActiveAuditMember();
+        // Get current voting state first
+        const stateRes = await fetch(`${API_URL}/api/voting-state`);
+        if (stateRes.ok) {
+          const state = await stateRes.json();
+          setVotingState(state);
+          
+          // Then fetch the appropriate active item based on state
+          if (state.isOpen) {
+            if (state.type === 'resolution') {
+              await fetchActiveResolution();
+            } else if (state.type === 'audit') {
+              await fetchActiveAuditMember();
+            }
+          }
+        }
+        
         await checkVoteStatus();
         setIsLoading(false);
       } catch (err) {
@@ -48,7 +63,7 @@ export default function VotingPage({ userName, onLogout }) {
       }
     };
 
-    checkAuthAndFetchData();
+    initializeApp();
 
     socket.on('voting-state', (state) => {
       setVotingState(state);
