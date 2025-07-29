@@ -540,9 +540,10 @@ const fetchActiveAuditMember = async () => {
                     <td><strong>TOTAL</strong></td>
                     <td className='for-column'><strong>{(Number(voteCounts.yes)+Number(Proxy_votes)).toLocaleString()}</strong></td>
                     <td className='for-column'><strong>{(Number(Proxy_Holdings)+Number(voteCounts.yesHoldings)).toLocaleString()}</strong></td>
-                    <td className='for-column'><strong></strong></td>
+                    <td className='for-column'><strong>{yesPercentage}%</strong></td>
                     <td className='against-column'><strong>0</strong></td>
                     <td className='against-column'><strong>{(Number(voteCounts.noHoldings)).toLocaleString()}</strong></td>
+                    <td className='against-column'><strong>{noPercentage}%</strong></td>
                   </tr>
                 </tbody>
               </table>
