@@ -19,6 +19,7 @@ export default function VotingPage({ userName, onLogout }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [submittingSide, setSubmittingSide] = useState(null); // 'for', 'against', or null
 
   // Define checkAuditVoteStatus first
   const checkAuditVoteStatus = useCallback(async () => {
@@ -258,9 +259,9 @@ useEffect(() => {
 
   const handleVote = async (decision) => {
     if (!votingState.isOpen || !activeResolution || hasVoted) return;
-  
+    const side = decision ? 'for' : 'against';
     try {
-      setIsSubmitting(true);
+      setSubmittingSide(side);
       const response = await fetch(`${API_URL}/api/vote`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -270,7 +271,6 @@ useEffect(() => {
           decision
         })
       });
-  
       if (!response.ok) {
         let errMsg = 'Failed to submit vote';
         try {
@@ -283,7 +283,7 @@ useEffect(() => {
     } catch (error) {
       setError(error.message);
     } finally {
-      setIsSubmitting(false);
+      setSubmittingSide(null);
     }
   };
 
@@ -537,26 +537,18 @@ useEffect(() => {
                 ) : (
                   <div className="vote-buttons">
                     <button 
-                      className="vote-btn yes-btn"
+                      className={`vote-btn yes-btn${submittingSide && submittingSide !== 'for' ? ' blurred' : ''}`}
                       onClick={() => handleVote(true)}
-                      disabled={isSubmitting}
+                      disabled={!!submittingSide}
                     >
-                      {isSubmitting ? 'Submitting...' : (
-                        <>
-                          <FaCheck /> For
-                        </>
-                      )}
+                      {submittingSide === 'for' ? 'Submitting...' : (<><FaCheck /> For</>)}
                     </button>
                     <button 
-                      className="vote-btn no-btn"
+                      className={`vote-btn no-btn${submittingSide && submittingSide !== 'against' ? ' blurred' : ''}`}
                       onClick={() => handleVote(false)}
-                      disabled={isSubmitting}
+                      disabled={!!submittingSide}
                     >
-                      {isSubmitting ? 'Submitting...' : (
-                        <>
-                          <FaTimes /> Against
-                        </>
-                      )}
+                      {submittingSide === 'against' ? 'Submitting...' : (<><FaTimes /> Against</>)}
                     </button>
                   </div>
                 )}
