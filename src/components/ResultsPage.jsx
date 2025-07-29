@@ -5,9 +5,11 @@ import { jsPDF } from 'jspdf';
 import html2canvas from 'html2canvas';
 import './ResultsPage.css';
 import { Chart as ChartJS, ArcElement, BarElement, CategoryScale, LinearScale, Tooltip, Legend } from 'chart.js';
-import { useProxy } from '../context/ProxyContext';
 ChartJS.register(ArcElement, BarElement, CategoryScale, LinearScale, Tooltip, Legend);
 import { API_URL } from '../config';
+
+const DEFAULT_PROXY_VOTES = 120;
+const DEFAULT_PROXY_HOLDINGS = 136789566;
 
 
 
@@ -20,7 +22,8 @@ export default function ResultsPage() {
   const [activeAuditMember, setActiveAuditMember] = useState(null);
   const [timeLeft, setTimeLeft] = useState(0);
   const [isVotingOpen, setIsVotingOpen] = useState(false);
-  const { proxyVotes, proxyHoldings } = useProxy();
+  const [proxyVotes, setProxyVotes] = useState(DEFAULT_PROXY_VOTES);
+const [proxyHoldings, setProxyHoldings] = useState(DEFAULT_PROXY_HOLDINGS);
   const [voteCounts, setVoteCounts] = useState({ 
     yes: 0, 
     no: 0, 
@@ -28,8 +31,8 @@ export default function ResultsPage() {
     percentageYes: 0,
     percentageNo: 0,
     totalHoldings: 0,
-    Proxy_votes: 0, // Will be set in useEffect
-    totalproxyVotes: 0,
+    Proxy_votes: proxyVotes,
+    totalproxyVotes:0,
     yesHoldings: 0,
     noHoldings: 0,
     percentageYesHoldings: 0,
@@ -77,36 +80,25 @@ export default function ResultsPage() {
     };
   }, []);
 
-  // Update vote counts when proxyVotes changes
   useEffect(() => {
-    if (voteCounts.total > 0) {
-      setVoteCounts(prev => ({
-        ...prev,
-        Proxy_votes: proxyVotes,
-        totalproxyVotes: prev.total + proxyVotes
-      }));
-    }
-  }, [proxyVotes]);
+    
 
-  useEffect(() => {
+
+
     if (!socket) return;
     
     const handleVoteUpdate = (data) => {
       if (activeResolution && data.resolutionId === activeResolution.id) {
-        const totalWithProxy = data.total + proxyVotes;
         setVoteCounts(prev => ({
-          ...prev,
           yes: data.yes,
           no: data.no,
           total: data.total,
-          totalproxyVotes: totalWithProxy,
+          totalproxyVotes: data.total + proxyVotes,
           percentageYes: data.total > 0 ? Math.round((data.yes / data.total) * 100) : 0,
           percentageNo: data.total > 0 ? Math.round((data.no / data.total) * 100) : 0,
-          totalHoldings: data.totalHoldings || 0,
-          yesHoldings: data.yesHoldings || 0,
-          noHoldings: data.noHoldings || 0,
-          percentageYesHoldings: data.totalHoldings > 0 ? Math.round(((data.yesHoldings || 0) / data.totalHoldings) * 100) : 0,
-          percentageNoHoldings: data.totalHoldings > 0 ? Math.round(((data.noHoldings || 0) / data.totalHoldings) * 100) : 0
+          totalHoldings: data.totalHoldings,
+          yesHoldings: data.yesHoldings,
+          noHoldings: data.noHoldings,
         }));
         fetchResults();
       }

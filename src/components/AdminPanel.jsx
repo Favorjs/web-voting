@@ -4,7 +4,6 @@ import ResolutionForm from './ResolutionManager';
 import './AdminPanel.css';
 import { useParams } from 'react-router-dom';
 import { API_URL } from '../config';
-import { useProxy } from '../context/ProxyContext';
 
 const socket = io(API_URL);
 export default function AdminPanel() {
@@ -19,7 +18,6 @@ export default function AdminPanel() {
   const [activeAuditMember, setActiveAuditMember] = useState(null);
   const [showAuditForm, setShowAuditForm] = useState(false);
   const [editingAuditMember, setEditingAuditMember] = useState(null);
-  const { proxyVotes, proxyHoldings, updateProxySettings } = useProxy();
 
   useEffect(() => {
     fetchResolutions();
@@ -244,58 +242,6 @@ export default function AdminPanel() {
   return (
     <div className="admin-panel">
       <h1>Voting Control Panel</h1>
-      <div className="proxy-controls" style={{ marginBottom: '20px', padding: '15px', background: '#f5f5f5', borderRadius: '8px' }}>
-        <h3>Proxy Controls</h3>
-        <div style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
-          <div>
-            <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Proxy Votes: {proxyVotes}</label>
-            <div style={{ display: 'flex', gap: '5px' }}>
-              <button 
-                onClick={async () => {
-                  const newVotes = Math.max(0, proxyVotes - 1);
-                  await updateProxySettings(newVotes, proxyHoldings);
-                }}
-                style={{ padding: '5px 10px', cursor: 'pointer' }}
-              >
-                -
-              </button>
-              <button 
-                onClick={async () => {
-                  const newVotes = proxyVotes + 1;
-                  await updateProxySettings(newVotes, proxyHoldings);
-                }}
-                style={{ padding: '5px 10px', cursor: 'pointer' }}
-              >
-                +
-              </button>
-            </div>
-          </div>
-          <div>
-            <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Proxy Holdings: {proxyHoldings.toLocaleString()}</label>
-            <div style={{ display: 'flex', gap: '5px' }}>
-              <button 
-                onClick={async () => {
-                  const newHoldings = Math.max(0, proxyHoldings - 1000);
-                  await updateProxySettings(proxyVotes, newHoldings);
-                }}
-                style={{ padding: '5px 10px', cursor: 'pointer' }}
-              >
-                -1K
-              </button>
-              <button 
-                onClick={async () => {
-                  const newHoldings = proxyHoldings + 1000;
-                  await updateProxySettings(proxyVotes, newHoldings);
-                }}
-                style={{ padding: '5px 10px', cursor: 'pointer' }}
-              >
-                +1K
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
       <div className="panel-header">
         <div className="admin-tabs">
           <button 
