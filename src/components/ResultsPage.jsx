@@ -5,11 +5,9 @@ import { jsPDF } from 'jspdf';
 import html2canvas from 'html2canvas';
 import './ResultsPage.css';
 import { Chart as ChartJS, ArcElement, BarElement, CategoryScale, LinearScale, Tooltip, Legend } from 'chart.js';
+import { useProxy } from '../context/ProxyContext';
 ChartJS.register(ArcElement, BarElement, CategoryScale, LinearScale, Tooltip, Legend);
 import { API_URL } from '../config';
-
-const DEFAULT_PROXY_VOTES = 120;
-const DEFAULT_PROXY_HOLDINGS = 136789566;
 
 
 
@@ -22,8 +20,7 @@ export default function ResultsPage() {
   const [activeAuditMember, setActiveAuditMember] = useState(null);
   const [timeLeft, setTimeLeft] = useState(0);
   const [isVotingOpen, setIsVotingOpen] = useState(false);
-  const [proxyVotes, setProxyVotes] = useState(DEFAULT_PROXY_VOTES);
-const [proxyHoldings, setProxyHoldings] = useState(DEFAULT_PROXY_HOLDINGS);
+  const { proxyVotes, proxyHoldings } = useProxy();
   const [voteCounts, setVoteCounts] = useState({ 
     yes: 0, 
     no: 0, 
@@ -31,8 +28,8 @@ const [proxyHoldings, setProxyHoldings] = useState(DEFAULT_PROXY_HOLDINGS);
     percentageYes: 0,
     percentageNo: 0,
     totalHoldings: 0,
-    Proxy_votes: proxyVotes,
-    totalproxyVotes:0,
+    Proxy_votes: 0, // Will be set in useEffect
+    totalproxyVotes: 0,
     yesHoldings: 0,
     noHoldings: 0,
     percentageYesHoldings: 0,
@@ -80,25 +77,36 @@ const [proxyHoldings, setProxyHoldings] = useState(DEFAULT_PROXY_HOLDINGS);
     };
   }, []);
 
+  // Update vote counts when proxyVotes changes
   useEffect(() => {
-    
+    if (voteCounts.total > 0) {
+      setVoteCounts(prev => ({
+        ...prev,
+        Proxy_votes: proxyVotes,
+        totalproxyVotes: prev.total + proxyVotes
+      }));
+    }
+  }, [proxyVotes]);
 
-
-
+  useEffect(() => {
     if (!socket) return;
     
     const handleVoteUpdate = (data) => {
       if (activeResolution && data.resolutionId === activeResolution.id) {
+        const totalWithProxy = data.total + proxyVotes;
         setVoteCounts(prev => ({
+          ...prev,
           yes: data.yes,
           no: data.no,
           total: data.total,
-          totalproxyVotes: data.total + proxyVotes,
+          totalproxyVotes: totalWithProxy,
           percentageYes: data.total > 0 ? Math.round((data.yes / data.total) * 100) : 0,
           percentageNo: data.total > 0 ? Math.round((data.no / data.total) * 100) : 0,
-          totalHoldings: data.totalHoldings,
-          yesHoldings: data.yesHoldings,
-          noHoldings: data.noHoldings,
+          totalHoldings: data.totalHoldings || 0,
+          yesHoldings: data.yesHoldings || 0,
+          noHoldings: data.noHoldings || 0,
+          percentageYesHoldings: data.totalHoldings > 0 ? Math.round(((data.yesHoldings || 0) / data.totalHoldings) * 100) : 0,
+          percentageNoHoldings: data.totalHoldings > 0 ? Math.round(((data.noHoldings || 0) / data.totalHoldings) * 100) : 0
         }));
         fetchResults();
       }
@@ -420,9 +428,9 @@ const fetchActiveAuditMember = async () => {
       {activeAuditMember && (
         <div className="current-resolution">
           <h2>Audit Committee Election</h2>
-          <h1><span style={{fontSize:'0.8em',marginLeft:'10px'}}>
+          {/* <h1><span style={{fontSize:'0.8em',marginLeft:'10px'}}>
             {isVotingOpen ? (timeLeft>0?`(${formatTime(timeLeft)})`:'(Time\'s up)') : ''}
-          </span></h1>
+          </span></h1> */}
           
           <div className="results-display">
             <div className="chart-container audit-chart" style={{ height: '500px' }}>
