@@ -4,11 +4,9 @@ import ResolutionForm from './ResolutionManager';
 import './AdminPanel.css';
 import { useParams } from 'react-router-dom';
 import { API_URL } from '../config';
-import { useProxy } from '../contexts/ProxyContext';
 
 const socket = io(API_URL);
 export default function AdminPanel() {
-  const { proxyEnabled, setProxyEnabled } = useProxy();
   const [resolutions, setResolutions] = useState([]);
   const [activeResolution, setActiveResolution] = useState(null);
   const [votingState, setVotingState] = useState({ isOpen: false, type: null });
@@ -416,17 +414,6 @@ export default function AdminPanel() {
           ))}
         </div>
       )}
-      <div className="proxy-toggle-buttons">
-        <button onClick={() => setProxyEnabled(false)}>
-          Disable Proxy Votes and Holdings
-        </button>
-        <button onClick={() => setProxyEnabled(true)}>
-          Enable Proxy Votes and Holdings
-        </button>
-      </div>
-      <p>
-        Proxy Votes and Holdings are <b>{proxyEnabled ? 'Enabled' : 'Disabled'}</b>
-      </p>
     </div>
   );
 }

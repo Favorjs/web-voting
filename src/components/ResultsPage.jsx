@@ -7,7 +7,6 @@ import './ResultsPage.css';
 import { Chart as ChartJS, ArcElement, BarElement, CategoryScale, LinearScale, Tooltip, Legend } from 'chart.js';
 ChartJS.register(ArcElement, BarElement, CategoryScale, LinearScale, Tooltip, Legend);
 import { API_URL } from '../config';
-import { useProxy } from '../contexts/ProxyContext';
 
 const DEFAULT_PROXY_VOTES = 120;
 const DEFAULT_PROXY_HOLDINGS = 136789566;
@@ -43,18 +42,6 @@ const [proxyHoldings, setProxyHoldings] = useState(DEFAULT_PROXY_HOLDINGS);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [socket, setSocket] = useState(null);
-  const { proxyEnabled } = useProxy();
-
-  // Add effect to update proxyVotes and proxyHoldings when proxyEnabled changes
-  useEffect(() => {
-    if (proxyEnabled) {
-      setProxyVotes(DEFAULT_PROXY_VOTES);
-      setProxyHoldings(DEFAULT_PROXY_HOLDINGS);
-    } else {
-      setProxyVotes(0);
-      setProxyHoldings(0);
-    }
-  }, [proxyEnabled]);
 
   useEffect(() => {
     const newSocket = io(API_URL, {
@@ -572,10 +559,26 @@ const fetchActiveAuditMember = async () => {
           <button onClick={downloadPDF} className="pdf-button">
             Download PDF
           </button>
-          {/* <button className="proxy-toggle-btn" onClick={() => setProxyVotes(0)}>Disable Proxy Votes</button>
-          <button className="proxy-toggle-btn" onClick={() => setProxyVotes(DEFAULT_PROXY_VOTES)}>Enable Proxy Votes</button>
-          <button className="proxy-toggle-btn" onClick={() => setProxyHoldings(0)}>Disable Proxy Holdings</button>
-          <button className="proxy-toggle-btn" onClick={() => setProxyHoldings(DEFAULT_PROXY_HOLDINGS)}>Enable Proxy Holdings</button> */}
+          <div className="proxy-toggle-buttons">
+            <button
+              className="proxy-toggle-btn"
+              onClick={() => {
+                setProxyVotes(0);
+                setProxyHoldings(0);
+              }}
+            >
+              Disable Proxy Votes and Holdings
+            </button>
+            <button
+              className="proxy-toggle-btn"
+              onClick={() => {
+                setProxyVotes(DEFAULT_PROXY_VOTES);
+                setProxyHoldings(DEFAULT_PROXY_HOLDINGS);
+              }}
+            >
+              Enable Proxy Votes and Holdings
+            </button>
+          </div>
         </div>
       )}
     </div>
