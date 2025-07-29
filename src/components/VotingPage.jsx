@@ -23,6 +23,26 @@ export default function VotingPage({ userName, onLogout }) {
 
 
 
+  // Function to handle voting state updates
+  const updateVotingState = useCallback(async (state) => {
+    setVotingState(state);
+    
+    if (!state.isOpen) {
+      setActiveResolution(null);
+      setActiveAuditMember(null);
+      setHasVoted(false);
+      setHasVotedAudit(false);
+    } else if (state.type === 'resolution') {
+      await fetchActiveResolution();
+      setActiveAuditMember(null);
+      await checkVoteStatus();
+    } else if (state.type === 'audit') {
+      await fetchActiveAuditMember();
+      setActiveResolution(null);
+      await checkAuditVoteStatus();
+    }
+  }, [fetchActiveResolution, fetchActiveAuditMember, checkAuditVoteStatus]);
+
   useEffect(() => {
     // Fetch initial data and check authentication
     const initializeApp = async () => {
@@ -39,22 +59,16 @@ export default function VotingPage({ userName, onLogout }) {
         }
 
         // Get current voting state first
-        const stateRes = await fetch(`${API_URL}/api/voting-state`);
-        if (stateRes.ok) {
-          const state = await stateRes.json();
-          setVotingState(state);
-          
-          // Then fetch the appropriate active item based on state
-          if (state.isOpen) {
-            if (state.type === 'resolution') {
-              await fetchActiveResolution();
-            } else if (state.type === 'audit') {
-              await fetchActiveAuditMember();
-            }
+        try {
+          const stateRes = await fetch(`${API_URL}/api/voting-state`);
+          if (stateRes.ok) {
+            const state = await stateRes.json();
+            await updateVotingState(state);
           }
+        } catch (err) {
+          console.error('Error fetching voting state:', err);
         }
         
-        await checkVoteStatus();
         setIsLoading(false);
       } catch (err) {
         console.error('Initialization error:', err);
@@ -64,6 +78,18 @@ export default function VotingPage({ userName, onLogout }) {
     };
 
     initializeApp();
+
+    // Set up socket listeners
+    const handleVotingState = (state) => {
+      updateVotingState(state);
+    };
+
+    socket.on('voting-state', handleVotingState);
+    
+    // Clean up
+    return () => {
+      socket.off('voting-state', handleVotingState);
+    };
 
     socket.on('voting-state', (state) => {
       setVotingState(state);
