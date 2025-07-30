@@ -8,8 +8,8 @@ import { Chart as ChartJS, ArcElement, BarElement, CategoryScale, LinearScale, T
 ChartJS.register(ArcElement, BarElement, CategoryScale, LinearScale, Tooltip, Legend);
 import { API_URL } from '../config';
 
-const DEFAULT_PROXY_VOTES = 120;
-const DEFAULT_PROXY_HOLDINGS = 136789566;
+const DEFAULT_PROXY_VOTES = 11;
+const DEFAULT_PROXY_HOLDINGS = 164206735807;
 
 
 
