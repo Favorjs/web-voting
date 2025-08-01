@@ -138,7 +138,7 @@ const [proxyHoldings, setProxyHoldings] = useState(DEFAULT_PROXY_HOLDINGS);
     socket.on('voting-state', state => {
       setIsVotingOpen(state.isOpen);
       if (!state.isOpen) {
-        setActiveResolution(null);
+       // setActiveResolution(null);
         setActiveAuditMember(null);
       } else if (state.type === 'resolution') {
         fetchActiveResolution();
