@@ -8,8 +8,8 @@ import { Chart as ChartJS, ArcElement, BarElement, CategoryScale, LinearScale, T
 ChartJS.register(ArcElement, BarElement, CategoryScale, LinearScale, Tooltip, Legend);
 import { API_URL } from '../config';
 
-const DEFAULT_PROXY_VOTES = 11;
-const DEFAULT_PROXY_HOLDINGS = 164206735807;
+const DEFAULT_PROXY_VOTES = 477;
+const DEFAULT_PROXY_HOLDINGS = 14628202296;
 
 
 
@@ -556,11 +556,11 @@ const fetchActiveAuditMember = async () => {
               </table>
             </div>
           </div>
-          <button onClick={downloadPDF} className="pdf-button">
+{/*           <button onClick={downloadPDF} className="pdf-button">
             Download PDF
-          </button>
+          </button> */}
           <div className="proxy-toggle-buttons">
-            <button
+{/*             <button
               className="proxy-toggle-btn"
               onClick={() => {
                 setProxyVotes(0);
@@ -568,8 +568,8 @@ const fetchActiveAuditMember = async () => {
               }}
             >
               Disable Proxy Votes and Holdings
-            </button>
-            <button
+            </button> */}
+{/*             <button
               className="proxy-toggle-btn"
               onClick={() => {
                 setProxyVotes(DEFAULT_PROXY_VOTES);
@@ -577,7 +577,7 @@ const fetchActiveAuditMember = async () => {
               }}
             >
               Enable Proxy Votes and Holdings
-            </button>
+            </button> */}
           </div>
         </div>
       )}
