@@ -412,7 +412,7 @@ const fetchActiveAuditMember = async () => {
     <div className="results-container">
       <div className="header">
         <img src="/favicon.png" alt="Left Logo" />
-        <img src="/redstar.jpg" alt="Right Logo" />
+        <img src="/redstar.png" alt="Right Logo" />
       </div>
       
       <h2>Voting Results</h2>
