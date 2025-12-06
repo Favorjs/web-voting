@@ -471,9 +471,9 @@ const fetchActiveAuditMember = async () => {
               </table>
             </div>
           </div>
-          <button onClick={downloadPDF} className="pdf-button">
+          {/* <button onClick={downloadPDF} className="pdf-button">
             Download PDF
-          </button>
+          </button> */}
         </div>
       )}
 

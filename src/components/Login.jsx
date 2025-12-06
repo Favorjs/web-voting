@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { FaVoteYea, FaSignInAlt, FaEnvelope, FaPhone, FaHeadphones } from 'react-icons/fa';
+import { FaVoteYea, FaEnvelope, FaPhone, FaArrowRight, FaHeadphones } from 'react-icons/fa';
 import './Login.css';
 import { API_URL } from '../config';
 
@@ -26,8 +26,6 @@ export default function LoginPage({ onLogin }) {
     setIsSubmitting(true);
     setError('');
     
-
-    
     try {
       const response = await fetch(`${API_URL}/api/login`, {
         method: 'POST',
@@ -37,7 +35,7 @@ export default function LoginPage({ onLogin }) {
       });
       if (response.status === 409) {
         const data = await response.json();
-        setError(data.error || 'User is already logged in elsewhere. Please sign out from the other device/browser first.');
+        setError(data.error || 'User is already logged in elsewhere.');
         setIsSubmitting(false);
         return;
       }
@@ -56,70 +54,62 @@ export default function LoginPage({ onLogin }) {
 
   return (
     <div className="login-container">
-      <header className="login-header">
-        <div className="header-content">
-          <div className="logo">
-            <FaVoteYea className="logo-icon" />
-            <span>E-Voting System</span>
+      <header className="login-nav">
+        <div className="nav-content">
+          <div className="brand">
+            <FaVoteYea className="brand-icon" />
+            <span>APEL Vote</span>
           </div>
-          <nav className="main-nav">
-            <a href="https://wa.me/2347046126698" className="nav-link"><FaHeadphones /> Support</a>
-          </nav>
+          <a href="https://wa.me/2347046126698" className="help-link">
+            <FaHeadphones /> Support
+          </a>
         </div>
       </header>
-  
-      <main className="login-main wide-layout">
-        <div className="login-card">
-          <div className="card-header">
-            <div className="icon-circle">
-              <FaSignInAlt className="login-icon" />
-            </div>
-            <p className="subtext">Enter your email or phone number to access the voting portal</p>
+
+      <main className="login-body">
+        <div className="login-content">
+          <div className="login-header">
+            <h1>Welcome</h1>
+            <p>Enter your details to access the AGM portal</p>
           </div>
 
-          <form onSubmit={handleSubmit} className="login-form">
-            <div className="input-container">
-              <div className="form-group smart-input">
+          <form onSubmit={handleSubmit} className="modern-form">
+            <div className="input-group">
+              <label htmlFor="identifier">Email or Phone Number</label>
+              <div className="input-wrapper">
+                <span className="input-icon-left">{inputIcon}</span>
                 <input
                   id="identifier"
                   type="text"
                   value={identifier}
                   onChange={handleInputChange}
-                  placeholder="Email or phone number"
+                  placeholder="name@example.com"
                   required
-                  className="smart-input-field"
+                  className="modern-input"
                 />
-                <div className="input-hint">
-                  {/@/.test(identifier) ? 'your.email@example.com' : '+234 (123) 456-7890'}
-                </div>
               </div>
             </div>
 
             {error && (
-              <div className="error-message">
-                <p>{error}</p>
+              <div className="error-banner">
+                {error}
               </div>
             )}
 
-            <button type="submit" className="login-button" disabled={isSubmitting}>
-              {isSubmitting ? (
-                <span className="spinner"></span>
-              ) : (
+            <button type="submit" className="submit-btn" disabled={isSubmitting}>
+              {isSubmitting ? <span className="loader"></span> : (
                 <>
-                  <FaSignInAlt className="button-icon" />
-                  <span>Continue to Voting</span>
+                  Continue <FaArrowRight />
                 </>
               )}
             </button>
           </form>
+          
+          <div className="login-footer-note">
+            <p>Protected by secure end-to-end encryption</p>
+          </div>
         </div>
       </main>
-
-      <footer className="login-footer">
-        <div className="footer-content">
-          <p>&copy; {new Date().getFullYear()} E-Voting System. All rights reserved. Apel Capital Registrars Limited</p>
-        </div>
-      </footer>
     </div>
   );
 }
