@@ -26,9 +26,7 @@
   background-color: var(--bg-page);
   font-family: 'Inter', -apple-system, sans-serif;
   color: var(--text-main);
-  /* Use viewport based sizing where possible instead of hard zoom if possible, 
-     but keeping zoom as requested */
-  zoom: 90%; 
+  zoom: 90%;
 }
 
 /* Navbar */
@@ -40,6 +38,7 @@
   top: 0;
   z-index: 50;
   box-shadow: var(--shadow-sm);
+  width: 100%;
 }
 
 .nav-content {
@@ -49,6 +48,8 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .brand {
@@ -58,6 +59,7 @@
   color: var(--primary);
   font-weight: 700;
   font-size: 1.25rem;
+  flex-shrink: 0;
 }
 
 .brand-icon {
@@ -69,6 +71,7 @@
   display: flex;
   align-items: center;
   gap: 1.5rem;
+  flex-shrink: 0;
 }
 
 .username {
@@ -89,6 +92,7 @@
   font-size: 0.95rem;
   cursor: pointer;
   transition: var(--transition);
+  white-space: nowrap;
 }
 
 .logout-button:hover {
@@ -102,10 +106,13 @@
   flex: 1;
   padding: 2rem 1rem;
   width: 100%;
+  max-width: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: flex-start; /* Better for mobile scrolling */
+  justify-content: flex-start;
+  box-sizing: border-box;
+  overflow-x: hidden;
 }
 
 /* Cards */
@@ -119,6 +126,7 @@
   border: 1px solid rgba(0,0,0,0.02);
   animation: slideUp 0.4s ease-out;
   margin-top: 1rem;
+  box-sizing: border-box;
 }
 
 .card-header {
@@ -169,14 +177,17 @@
 
 .card-content {
   padding: 1.5rem;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .resolution-description {
   font-size: 1.05rem;
   line-height: 1.6;
   color: var(--text-main);
-  text-align: left; /* Better readability */
+  text-align: left;
   margin-bottom: 2rem;
+  word-wrap: break-word;
 }
 
 .candidate-info {
@@ -208,7 +219,7 @@
   display: flex;
   gap: 1rem;
   width: 100%;
-  flex-direction: row; /* Default to row */
+  flex-direction: row;
 }
 
 .decision-btn {
@@ -225,7 +236,6 @@
   cursor: pointer;
   transition: var(--transition);
   color: white;
-  /* Touch target size */
   min-height: 3rem; 
 }
 
@@ -286,6 +296,7 @@
   border-radius: 0.75rem;
   width: 100%;
   border: 1px solid #e2e8f0;
+  box-sizing: border-box;
 }
 
 .vote-status.success {
@@ -315,6 +326,7 @@
 .waiting-card {
   text-align: center;
   padding: 3rem 1.5rem;
+  box-sizing: border-box;
 }
 
 .waiting-content {
@@ -377,6 +389,7 @@
   background-color: var(--bg-page);
   padding: 1.5rem;
   text-align: center;
+  box-sizing: border-box;
 }
 
 .loading-spinner {
@@ -458,8 +471,13 @@
 
 /* Mobile Responsiveness Improvements */
 @media (max-width: 640px) {
+  /* Disable zoom on mobile to prevent layout issues */
+  .voting-page {
+    zoom: 100%;
+  }
+
   .voting-main {
-    padding: 1rem;
+    padding: 1rem 0.75rem; /* Reduce horizontal padding */
   }
 
   .nav-content {
