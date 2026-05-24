@@ -57,8 +57,7 @@ export default function LoginPage({ onLogin }) {
       <header className="login-nav">
         <div className="nav-content">
           <div className="brand">
-            <FaVoteYea className="brand-icon" />
-            <span>APEL Vote</span>
+            <img src="/logo.png" alt="APEL Logo" className="brand-logo" />
           </div>
           <a href="https://wa.me/2347046126698" className="help-link">
             <FaHeadphones /> Support
@@ -106,7 +105,7 @@ export default function LoginPage({ onLogin }) {
           </form>
           
           <div className="login-footer-note">
-            <p>Protected by secure end-to-end encryption</p>
+            <p></p>
           </div>
         </div>
       </main>
