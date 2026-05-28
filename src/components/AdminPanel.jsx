@@ -372,26 +372,6 @@ export default function AdminPanel({ adminUser, onAdminLogout }) {
                   <p className="ap-card-desc">{res.description}</p>
                 </div>
 
-                <div className="ap-proxy-row">
-                  <span className="ap-proxy-label">Proxy Votes</span>
-                  <div className="ap-proxy-control">
-                    <input
-                      type="number"
-                      min="0"
-                      className="ap-proxy-input"
-                      value={proxyEdits[res.id] !== undefined ? proxyEdits[res.id] : (res.proxyVotes || 0)}
-                      onChange={e => setProxyEdits(prev => ({ ...prev, [res.id]: e.target.value }))}
-                    />
-                    <button
-                      className="ap-btn ap-btn-sm ap-btn-primary"
-                      onClick={() => saveProxyVotes(res.id)}
-                      disabled={proxyEdits[res.id] === undefined}
-                    >
-                      Save
-                    </button>
-                  </div>
-                </div>
-
                 <div className="ap-card-actions">
                   {activeResolution?.id !== res.id && (
                     <button className="ap-btn ap-btn-sm ap-btn-primary" onClick={() => activateResolution(res.id)}>
