@@ -20,11 +20,15 @@ export default function AdminPanel({ adminUser, onAdminLogout }) {
   const [showAuditForm, setShowAuditForm] = useState(false);
   const [editingAuditMember, setEditingAuditMember] = useState(null);
   const [proxyEdits, setProxyEdits] = useState({});
+  const [globalProxy, setGlobalProxy] = useState({ proxyVotes: 0, proxyHoldings: 0 });
+  const [globalProxyEdit, setGlobalProxyEdit] = useState(null);
+  const [globalProxySaving, setGlobalProxySaving] = useState(false);
 
   useEffect(() => {
     fetchResolutions();
     fetchVotingState();
     fetchAuditCommittee();
+    fetchGlobalProxy();
 
     socket.on('voting-state', (state) => setVotingState(state));
     socket.on('resolution-update', (res) => setActiveResolution(res));
@@ -150,6 +154,43 @@ export default function AdminPanel({ adminUser, onAdminLogout }) {
     }
   };
 
+  const fetchGlobalProxy = async () => {
+    try {
+      const res = await fetch(`${API_URL}/api/proxy-settings`, { credentials: 'include' });
+      if (res.ok) {
+        const data = await res.json();
+        setGlobalProxy(data);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const saveGlobalProxy = async () => {
+    const vals = globalProxyEdit ?? globalProxy;
+    setGlobalProxySaving(true);
+    try {
+      const res = await fetch(`${API_URL}/api/admin/proxy-settings`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          proxyVotes: Number(vals.proxyVotes),
+          proxyHoldings: Number(vals.proxyHoldings)
+        })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setGlobalProxy({ proxyVotes: data.proxyVotes, proxyHoldings: data.proxyHoldings });
+        setGlobalProxyEdit(null);
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setGlobalProxySaving(false);
+    }
+  };
+
   const saveProxyVotes = async (id) => {
     const value = proxyEdits[id];
     if (value === undefined || value === '') return;
@@ -238,6 +279,43 @@ export default function AdminPanel({ adminUser, onAdminLogout }) {
       </header>
 
       <main className="ap-main">
+        {/* Global Proxy Settings */}
+        <div className="ap-proxy-settings-card">
+          <div className="ap-proxy-settings-header">
+            <div>
+              <h3 className="ap-proxy-settings-title">Global Proxy Settings</h3>
+              <p className="ap-proxy-settings-sub">Applied to all resolutions on the results page</p>
+            </div>
+          </div>
+          <div className="ap-proxy-settings-fields">
+            <div className="ap-proxy-settings-field">
+              <label>Proxy Votes (FOR)</label>
+              <input
+                type="number"
+                min="0"
+                value={globalProxyEdit !== null ? globalProxyEdit.proxyVotes : globalProxy.proxyVotes}
+                onChange={e => setGlobalProxyEdit(prev => ({ ...(prev ?? globalProxy), proxyVotes: e.target.value }))}
+              />
+            </div>
+            <div className="ap-proxy-settings-field">
+              <label>Proxy Holdings</label>
+              <input
+                type="number"
+                min="0"
+                value={globalProxyEdit !== null ? globalProxyEdit.proxyHoldings : globalProxy.proxyHoldings}
+                onChange={e => setGlobalProxyEdit(prev => ({ ...(prev ?? globalProxy), proxyHoldings: e.target.value }))}
+              />
+            </div>
+            <button
+              className="ap-btn ap-btn-primary"
+              onClick={saveGlobalProxy}
+              disabled={globalProxySaving || globalProxyEdit === null}
+            >
+              {globalProxySaving ? 'Saving…' : 'Save Proxy'}
+            </button>
+          </div>
+        </div>
+
         <div className="ap-toolbar">
           <div className="ap-tabs">
             <button className={`ap-tab ${!showAuditCommittee ? 'active' : ''}`} onClick={() => handleTabChange(false)}>

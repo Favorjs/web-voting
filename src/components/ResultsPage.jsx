@@ -8,12 +8,6 @@ import { Chart as ChartJS, ArcElement, BarElement, CategoryScale, LinearScale, T
 ChartJS.register(ArcElement, BarElement, CategoryScale, LinearScale, Tooltip, Legend);
 import { API_URL } from '../config';
 
-const DEFAULT_PROXY_VOTES = 284;
-const DEFAULT_PROXY_HOLDINGS = 7825100783;
-
-
-
-
 
 export default function ResultsPage() {
   const formatTime = (s) => `${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`;
@@ -22,8 +16,8 @@ export default function ResultsPage() {
   const [activeAuditMember, setActiveAuditMember] = useState(null);
   const [timeLeft, setTimeLeft] = useState(0);
   const [isVotingOpen, setIsVotingOpen] = useState(false);
-  const [proxyVotes, setProxyVotes] = useState(DEFAULT_PROXY_VOTES);
-const [proxyHoldings, setProxyHoldings] = useState(DEFAULT_PROXY_HOLDINGS);
+  const [proxyVotes, setProxyVotes] = useState(0);
+  const [proxyHoldings, setProxyHoldings] = useState(0);
   const [voteCounts, setVoteCounts] = useState({ 
     yes: 0, 
     no: 0, 
@@ -64,6 +58,7 @@ const [proxyHoldings, setProxyHoldings] = useState(DEFAULT_PROXY_HOLDINGS);
           fetchActiveResolution(),
           fetchActiveAuditMember(),
           fetchAuditResults(),
+          fetchProxySettings(),
         ]);
       } catch (err) {
         console.error('Initial data load error:', err);
@@ -149,11 +144,16 @@ const [proxyHoldings, setProxyHoldings] = useState(DEFAULT_PROXY_HOLDINGS);
       }
     });
     socket.on('audit-vote-updated', handleAuditVoteUpdate);
-  
+    socket.on('proxy-settings-updated', ({ proxyVotes: pv, proxyHoldings: ph }) => {
+      setProxyVotes(pv);
+      setProxyHoldings(ph);
+    });
+
     return () => {
       socket.off('vote-updated', handleVoteUpdate);
       socket.off('resolution-update', handleResolutionUpdate);
       socket.off('audit-vote-updated', handleAuditVoteUpdate);
+      socket.off('proxy-settings-updated');
     };
   }, [socket, activeResolution, activeAuditMember]);
 
@@ -295,6 +295,18 @@ const fetchActiveAuditMember = async () => {
   console.log(`Yes: ${yesPercentage}%`);
   console.log(`No: ${noPercentage}%`);
 
+
+  const fetchProxySettings = async () => {
+    try {
+      const res = await fetch(`${API_URL}/api/proxy-settings`);
+      if (!res.ok) return;
+      const data = await res.json();
+      setProxyVotes(data.proxyVotes ?? 0);
+      setProxyHoldings(data.proxyHoldings ?? 0);
+    } catch (err) {
+      console.error('Failed to fetch proxy settings:', err);
+    }
+  };
 
   const fetchVoteCounts = async (resolutionId) => {
     try {
