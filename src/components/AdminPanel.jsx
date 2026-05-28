@@ -6,7 +6,8 @@ import { useParams } from 'react-router-dom';
 import { API_URL } from '../config';
 
 const socket = io(API_URL);
-export default function AdminPanel() {
+
+export default function AdminPanel({ adminUser, onAdminLogout }) {
   const [resolutions, setResolutions] = useState([]);
   const [activeResolution, setActiveResolution] = useState(null);
   const [votingState, setVotingState] = useState({ isOpen: false, type: null });
@@ -18,23 +19,16 @@ export default function AdminPanel() {
   const [activeAuditMember, setActiveAuditMember] = useState(null);
   const [showAuditForm, setShowAuditForm] = useState(false);
   const [editingAuditMember, setEditingAuditMember] = useState(null);
+  const [proxyEdits, setProxyEdits] = useState({});
 
   useEffect(() => {
     fetchResolutions();
     fetchVotingState();
     fetchAuditCommittee();
 
-    socket.on('voting-state', (state) => {
-      setVotingState(state);
-    });
-
-    socket.on('resolution-update', (res) => {
-      setActiveResolution(res);
-    });
-
-    socket.on('audit-member-updated', (member) => {
-      setActiveAuditMember(member);
-    });
+    socket.on('voting-state', (state) => setVotingState(state));
+    socket.on('resolution-update', (res) => setActiveResolution(res));
+    socket.on('audit-member-updated', (member) => setActiveAuditMember(member));
 
     return () => {
       socket.off('voting-state');
@@ -44,168 +38,152 @@ export default function AdminPanel() {
   }, []);
 
   useEffect(() => {
-    if (showAuditCommittee) {
-      fetchAuditCommittee();
-    } else {
-      fetchResolutions();
-    }
+    if (showAuditCommittee) fetchAuditCommittee();
+    else fetchResolutions();
   }, [showAuditCommittee]);
 
   const fetchResolutions = async () => {
     try {
-      const res = await fetch(`${API_URL}/api/resolutions`);
+      const res = await fetch(`${API_URL}/api/resolutions`, { credentials: 'include' });
       const data = await res.json();
       setResolutions(data);
-      const active = data.find(r => r.isActive);
-      setActiveResolution(active || null);
-    } catch (error) {
-      console.error('Error fetching resolutions:', error);
+      setActiveResolution(data.find(r => r.isActive) || null);
+    } catch (err) {
+      console.error(err);
     }
   };
 
   const fetchAuditCommittee = async () => {
     try {
-      const res = await fetch(`${API_URL}/api/audit-committee`);
+      const res = await fetch(`${API_URL}/api/audit-committee`, { credentials: 'include' });
       const data = await res.json();
       setAuditMembers(data);
-      const active = data.find(m => m.isActive);
-      setActiveAuditMember(active || null);
-    } catch (error) {
-      console.error('Error fetching audit committee:', error);
+      setActiveAuditMember(data.find(m => m.isActive) || null);
+    } catch (err) {
+      console.error(err);
     }
   };
 
   const fetchVotingState = async () => {
     try {
-      const res = await fetch(`${API_URL}/api/admin/voting/state`);
+      const res = await fetch(`${API_URL}/api/admin/voting/state`, { credentials: 'include' });
       const data = await res.json();
       setVotingState(data);
-    } catch (error) {
-      console.error('Error fetching voting state:', error);
+    } catch (err) {
+      console.error(err);
     }
   };
 
   const activateResolution = async (id) => {
     try {
-      // First deactivate any active audit member
-      await fetch(`${API_URL}/api/admin/audit-committee/deactivate-all`, {
-        method: 'POST'
-      });
-
-      // Then activate the resolution
-      const res = await fetch(`${API_URL}/api/admin/resolutions/${id}/activate`, {
-        method: 'PUT'
-      });
-      
+      await fetch(`${API_URL}/api/admin/audit-committee/deactivate-all`, { method: 'POST', credentials: 'include' });
+      const res = await fetch(`${API_URL}/api/admin/resolutions/${id}/activate`, { method: 'PUT', credentials: 'include' });
       if (res.ok) {
         const updated = await res.json();
         setActiveResolution(updated);
         setActiveAuditMember(null);
         socket.emit('resolution-activated', updated);
       }
-    } catch (error) {
-      console.error('Error activating resolution:', error);
+    } catch (err) {
+      console.error(err);
     }
   };
 
   const activateAuditMember = async (id) => {
     try {
-      // First deactivate any active resolution
-      await fetch('${API_URL}/api/admin/resolutions/close', {
-        method: 'POST'
-      });
-
-      // Then activate the audit member
+      await fetch(`${API_URL}/api/admin/resolutions/close`, { method: 'POST', credentials: 'include' });
       const res = await fetch(`${API_URL}/api/admin/audit-committee/${id}/activate`, {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         credentials: 'include'
       });
-      
       if (res.ok) {
         const updated = await res.json();
         setActiveAuditMember(updated);
         setActiveResolution(null);
         socket.emit('audit-member-activated', updated);
       }
-    } catch (error) {
-      console.error('Error activating audit member:', error);
+    } catch (err) {
+      console.error(err);
     }
   };
 
   const closeCurrent = async () => {
     try {
       if (activeResolution) {
-        await fetch(`${API_URL}/api/admin/resolutions/close`, { 
-          method: 'POST' 
-        });
+        await fetch(`${API_URL}/api/admin/resolutions/close`, { method: 'POST', credentials: 'include' });
         setActiveResolution(null);
       } else if (activeAuditMember) {
         await fetch(`${API_URL}/api/admin/audit-committee/${activeAuditMember.id}/deactivate`, {
-          method: 'PUT'
+          method: 'PUT', credentials: 'include'
         });
         setActiveAuditMember(null);
       }
-    } catch (error) {
-      console.error('Error closing current:', error);
+    } catch (err) {
+      console.error(err);
     }
   };
 
   const endAGM = async () => {
+    if (!window.confirm('End the AGM and send a thank-you message to all voters?')) return;
     try {
-      await fetch(`${API_URL}/api/admin/agm/end`, { method: 'POST' });
-      alert('AGM ended - thank you message sent to all voters');
+      await fetch(`${API_URL}/api/admin/agm/end`, { method: 'POST', credentials: 'include' });
     } catch (err) {
-      console.error('Failed to end AGM:', err);
+      console.error(err);
     }
   };
 
   const toggleVoting = async () => {
     const activeId = showAuditCommittee ? activeAuditMember?.id : activeResolution?.id;
     if (!activeId) return;
-  
     try {
       const type = showAuditCommittee ? 'audit' : 'resolution';
-  
       const res = await fetch(`${API_URL}/api/admin/voting/toggle`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({ type, activeId })
       });
-  
-      if (!res.ok) {
-        const err = await res.json();
-        alert(err.error || 'Failed to toggle voting');
-        return;
-      }
-  
-      // Optional: refresh local copy
-      const state = await res.json();      // { isOpen, type }
-      setVotingState(state);               // updates UI
-    } catch (e) {
-      console.error(e);
-      alert('Error toggling voting');
+      if (res.ok) setVotingState(await res.json());
+    } catch (err) {
+      console.error(err);
     }
   };
-  const deleteResolution = async (id) => {
-    if (!window.confirm('Are you sure you want to delete this resolution?')) return;
+
+  const saveProxyVotes = async (id) => {
+    const value = proxyEdits[id];
+    if (value === undefined || value === '') return;
     try {
-      await fetch(`${API_URL}/api/resolutions/${id}`, { method: 'DELETE' });
+      await fetch(`${API_URL}/api/admin/resolutions/${id}/proxy`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ proxyVotes: Number(value) })
+      });
       fetchResolutions();
-    } catch (error) {
-      console.error('Error deleting resolution:', error);
+      setProxyEdits(prev => { const n = { ...prev }; delete n[id]; return n; });
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const deleteResolution = async (id) => {
+    if (!window.confirm('Delete this resolution?')) return;
+    try {
+      await fetch(`${API_URL}/api/resolutions/${id}`, { method: 'DELETE', credentials: 'include' });
+      fetchResolutions();
+    } catch (err) {
+      console.error(err);
     }
   };
 
   const deleteAuditMember = async (id) => {
-    if (!window.confirm('Are you sure you want to delete this committee member?')) return;
+    if (!window.confirm('Delete this committee member?')) return;
     try {
-      await fetch(`${API_URL}/api/audit-committee/${id}`, { method: 'DELETE' });
+      await fetch(`${API_URL}/api/audit-committee/${id}`, { method: 'DELETE', credentials: 'include' });
       fetchAuditCommittee();
-    } catch (error) {
-      console.error('Error deleting audit member:', error);
+    } catch (err) {
+      console.error(err);
     }
   };
 
@@ -214,204 +192,215 @@ export default function AdminPanel() {
     window.history.pushState(null, '', showAudit ? '/admin/audit-committee' : '/admin');
   };
 
+  const handleAdminLogout = async () => {
+    try {
+      await fetch(`${API_URL}/api/admin/auth/logout`, { method: 'POST', credentials: 'include' });
+    } catch (err) {}
+    onAdminLogout();
+  };
+
   const handleAuditFormSubmit = async (formData) => {
     try {
-      const url = editingAuditMember 
+      const url = editingAuditMember
         ? `${API_URL}/api/audit-committee/${editingAuditMember.id}`
         : `${API_URL}/api/audit-committee`;
       const method = editingAuditMember ? 'PUT' : 'POST';
-      
       const response = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify(formData)
       });
-
-      if (!response.ok) {
-        throw new Error('Failed to save committee member');
-      }
-
+      if (!response.ok) throw new Error('Failed to save');
       setShowAuditForm(false);
       fetchAuditCommittee();
-    } catch (error) {
-      console.error('Error saving committee member:', error);
-      alert(error.message);
+    } catch (err) {
+      alert(err.message);
     }
   };
 
+  const activeItem = showAuditCommittee ? activeAuditMember : activeResolution;
+  const activeLabel = showAuditCommittee ? 'Audit Election' : 'Resolution';
+
   return (
-    <div className="admin-panel">
-      <h1>Voting Control Panel</h1>
-      <div className="panel-header">
-        <div className="admin-tabs">
-          <button 
-            onClick={() => handleTabChange(false)}
-            className={`tab-btn ${!showAuditCommittee ? 'active' : ''}`}
+    <div className="ap-root">
+      <header className="ap-header">
+        <div className="ap-header-inner">
+          <div className="ap-brand">
+            <img src="/logo.png" alt="APEL" className="ap-logo" />
+            <span className="ap-title">Voting Control Panel</span>
+          </div>
+          <div className="ap-header-right">
+            <span className="ap-admin-badge">{adminUser}</span>
+            <button onClick={handleAdminLogout} className="ap-logout-btn">Sign Out</button>
+          </div>
+        </div>
+      </header>
+
+      <main className="ap-main">
+        <div className="ap-toolbar">
+          <div className="ap-tabs">
+            <button className={`ap-tab ${!showAuditCommittee ? 'active' : ''}`} onClick={() => handleTabChange(false)}>
+              Resolutions
+            </button>
+            <button className={`ap-tab ${showAuditCommittee ? 'active' : ''}`} onClick={() => handleTabChange(true)}>
+              Audit Committee
+            </button>
+          </div>
+          <button
+            className="ap-add-btn"
+            onClick={() => {
+              if (showAuditCommittee) { setEditingAuditMember(null); setShowAuditForm(true); }
+              else { setEditingResolution(null); setShowResolutionForm(true); }
+            }}
           >
-            Resolutions
-          </button>
-          <button 
-            onClick={() => handleTabChange(true)}
-            className={`tab-btn ${showAuditCommittee ? 'active' : ''}`}
-          >
-            Audit Committee
+            + {showAuditCommittee ? 'Add Member' : 'Add Resolution'}
           </button>
         </div>
-        
-        {!showAuditCommittee ? (
-          <button 
-            onClick={() => { setEditingResolution(null); setShowResolutionForm(true); }}
-            className="add-resolution-btn"
-          >
-            Add New Resolution
-          </button>
-        ) : (
-          <button 
-            onClick={() => { setEditingAuditMember(null); setShowAuditForm(true); }}
-            className="add-resolution-btn"
-          >
-            Add Committee Member
-          </button>
+
+        {activeItem && (
+          <div className="ap-active-bar">
+            <div className="ap-active-info">
+              <span className="ap-active-dot" />
+              <span>Active {activeLabel}: <strong>{activeItem.title || activeItem.name}</strong></span>
+            </div>
+            <div className="ap-active-actions">
+              <button onClick={closeCurrent} className="ap-btn ap-btn-danger">
+                Close {activeLabel}
+              </button>
+              <button
+                onClick={toggleVoting}
+                className={`ap-btn ${votingState.isOpen ? 'ap-btn-warning' : 'ap-btn-success'}`}
+              >
+                {votingState.isOpen ? 'Close Voting' : 'Open Voting'}
+              </button>
+              <button onClick={endAGM} className="ap-btn ap-btn-dark">
+                End AGM
+              </button>
+            </div>
+          </div>
         )}
-      </div>
+
+        {!showAuditCommittee ? (
+          <div className="ap-list">
+            {resolutions.length === 0 && (
+              <div className="ap-empty">No resolutions yet. Add one to get started.</div>
+            )}
+            {resolutions.map(res => (
+              <div key={res.id} className={`ap-card ${activeResolution?.id === res.id ? 'ap-card-active' : ''}`}>
+                <div className="ap-card-top">
+                  {activeResolution?.id === res.id && <span className="ap-status-badge active">Active</span>}
+                  <h3 className="ap-card-title">{res.title}</h3>
+                  <p className="ap-card-desc">{res.description}</p>
+                </div>
+
+                <div className="ap-proxy-row">
+                  <span className="ap-proxy-label">Proxy Votes</span>
+                  <div className="ap-proxy-control">
+                    <input
+                      type="number"
+                      min="0"
+                      className="ap-proxy-input"
+                      value={proxyEdits[res.id] !== undefined ? proxyEdits[res.id] : (res.proxyVotes || 0)}
+                      onChange={e => setProxyEdits(prev => ({ ...prev, [res.id]: e.target.value }))}
+                    />
+                    <button
+                      className="ap-btn ap-btn-sm ap-btn-primary"
+                      onClick={() => saveProxyVotes(res.id)}
+                      disabled={proxyEdits[res.id] === undefined}
+                    >
+                      Save
+                    </button>
+                  </div>
+                </div>
+
+                <div className="ap-card-actions">
+                  {activeResolution?.id !== res.id && (
+                    <button className="ap-btn ap-btn-sm ap-btn-primary" onClick={() => activateResolution(res.id)}>
+                      Activate
+                    </button>
+                  )}
+                  <button className="ap-btn ap-btn-sm ap-btn-outline" onClick={() => { setEditingResolution(res); setShowResolutionForm(true); }}>
+                    Edit
+                  </button>
+                  <button className="ap-btn ap-btn-sm ap-btn-danger-outline" onClick={() => deleteResolution(res.id)}>
+                    Delete
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="ap-list">
+            {auditMembers.length === 0 && (
+              <div className="ap-empty">No committee members yet.</div>
+            )}
+            {auditMembers.map(member => (
+              <div key={member.id} className={`ap-card ${activeAuditMember?.id === member.id ? 'ap-card-active' : ''}`}>
+                <div className="ap-card-top">
+                  {activeAuditMember?.id === member.id && <span className="ap-status-badge active">Active</span>}
+                  <h3 className="ap-card-title">{member.name}</h3>
+                  {member.bio && <p className="ap-card-desc">{member.bio}</p>}
+                  <p className="ap-votes-count">Votes: <strong>{member.votesFor || 0}</strong></p>
+                </div>
+                <div className="ap-card-actions">
+                  {activeAuditMember?.id !== member.id && (
+                    <button className="ap-btn ap-btn-sm ap-btn-primary" onClick={() => activateAuditMember(member.id)}>
+                      Activate
+                    </button>
+                  )}
+                  <button className="ap-btn ap-btn-sm ap-btn-outline" onClick={() => { setEditingAuditMember(member); setShowAuditForm(true); }}>
+                    Edit
+                  </button>
+                  <button className="ap-btn ap-btn-sm ap-btn-danger-outline" onClick={() => deleteAuditMember(member.id)}>
+                    Delete
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </main>
 
       {showResolutionForm && (
-        <div className="modal-overlay">
-          <div className="modal-content">
-            <button 
-              className="close-btn" 
-              onClick={() => setShowResolutionForm(false)}
-            >
-              ×
-            </button>
-            <ResolutionForm 
+        <div className="ap-modal-overlay" onClick={() => setShowResolutionForm(false)}>
+          <div className="ap-modal" onClick={e => e.stopPropagation()}>
+            <button className="ap-modal-close" onClick={() => setShowResolutionForm(false)}>×</button>
+            <ResolutionForm
               resolution={editingResolution}
-              onSuccess={() => {
-                setShowResolutionForm(false);
-                fetchResolutions();
-              }}
-              onCancel={() => setShowResolutionForm(false)} 
+              onSuccess={() => { setShowResolutionForm(false); fetchResolutions(); }}
+              onCancel={() => setShowResolutionForm(false)}
             />
           </div>
         </div>
       )}
 
       {showAuditForm && (
-        <div className="modal-overlay">
-          <div className="modal-content">
-            <button 
-              className="close-btn" 
-              onClick={() => setShowAuditForm(false)}
-            >
-              ×
-            </button>
-            <div className="audit-form">
-              <h2>{editingAuditMember ? 'Edit Committee Member' : 'Add Committee Member'}</h2>
-              <form onSubmit={(e) => {
+        <div className="ap-modal-overlay" onClick={() => setShowAuditForm(false)}>
+          <div className="ap-modal" onClick={e => e.stopPropagation()}>
+            <button className="ap-modal-close" onClick={() => setShowAuditForm(false)}>×</button>
+            <h2 className="ap-modal-title">{editingAuditMember ? 'Edit Member' : 'Add Member'}</h2>
+            <form
+              onSubmit={e => {
                 e.preventDefault();
-                const formData = {
-                  name: e.target.name.value,
-                  bio: e.target.bio.value
-                };
-                handleAuditFormSubmit(formData);
-              }}>
-                <div className="form-group">
-                  <label>Name *</label>
-                  <input
-                    type="text"
-                    name="name"
-                    defaultValue={editingAuditMember?.name || ''}
-                    required
-                    minLength="3"
-                  />
-                </div>
-                <div className="form-group">
-                  <label>Bio</label>
-                  <textarea
-                    name="bio"
-                    defaultValue={editingAuditMember?.bio || ''}
-                    rows={4}
-                  />
-                </div>
-                <button type="submit">Save</button>
-                <button 
-                  type="button" 
-                  className="cancel-btn" 
-                  onClick={() => setShowAuditForm(false)}
-                >
-                  Cancel
-                </button>
-              </form>
-            </div>
-          </div>
-        </div>
-      )}
-
-      <div className="active-resolution-controls">
-        {(activeResolution || activeAuditMember) && (
-          <div className="resolution-controls">
-            <button 
-              onClick={closeCurrent}
-              className="close-resolution-btn"
+                handleAuditFormSubmit({ name: e.target.name.value, bio: e.target.bio.value });
+              }}
+              className="ap-audit-form"
             >
-              Close {showAuditCommittee ? 'Election' : 'Resolution'}
-            </button>
-            <button
-              onClick={toggleVoting}
-              className={`voting-toggle-btn ${votingState.isOpen ? 'open' : 'closed'}`}
-            >
-              {votingState.isOpen ? 'Close Voting' : 'Open Voting'}
-            </button>
-            <button
-              onClick={endAGM}
-              className="end-agm-btn"
-            >
-              End AGM
-            </button>
-          </div>
-        )}
-      </div>
-
-      {!showAuditCommittee ? (
-        <div className="resolution-list">
-          <h3>Available Resolutions</h3>
-          {resolutions.map((res) => (
-            <div
-              key={res.id}
-              className={`resolution-item ${activeResolution?.id === res.id ? 'active' : ''}`}
-            >
-              <h4>{res.title}</h4>
-              <p>{res.description}</p>
-              <div className="resolution-actions">
-                {activeResolution?.id !== res.id && (
-                  <button onClick={() => activateResolution(res.id)}>Activate</button>
-                )}
-                <button onClick={() => { setEditingResolution(res); setShowResolutionForm(true); }}>Edit</button>
-                <button onClick={() => deleteResolution(res.id)}>Delete</button>
+              <div className="ap-field">
+                <label>Name *</label>
+                <input type="text" name="name" defaultValue={editingAuditMember?.name || ''} required minLength="3" />
               </div>
-            </div>
-          ))}
-        </div>
-      ) : (
-        <div className="resolution-list">
-          <h3>Audit Committee Members</h3>
-          {auditMembers.map((member) => (
-            <div
-              key={member.id}
-              className={`resolution-item ${activeAuditMember?.id === member.id ? 'active' : ''}`}
-            >
-              <h4>{member.name}</h4>
-              <p>{member.bio}</p>
-              <p>Votes: {member.votesFor || 0}</p>
-              <div className="resolution-actions">
-                {activeAuditMember?.id !== member.id && (
-                  <button onClick={() => activateAuditMember(member.id)}>Activate</button>
-                )}
-                <button onClick={() => { setEditingAuditMember(member); setShowAuditForm(true); }}>Edit</button>
-                <button onClick={() => deleteAuditMember(member.id)}>Delete</button>
+              <div className="ap-field">
+                <label>Bio</label>
+                <textarea name="bio" defaultValue={editingAuditMember?.bio || ''} rows={4} />
               </div>
-            </div>
-          ))}
+              <div className="ap-form-actions">
+                <button type="submit" className="ap-btn ap-btn-primary">Save</button>
+                <button type="button" className="ap-btn ap-btn-outline" onClick={() => setShowAuditForm(false)}>Cancel</button>
+              </div>
+            </form>
+          </div>
         </div>
       )}
     </div>
