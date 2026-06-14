@@ -23,6 +23,7 @@ export default function AdminPanel({ adminUser, onAdminLogout }) {
   const [globalProxy, setGlobalProxy] = useState({ proxyVotes: 0, proxyHoldings: 0 });
   const [globalProxyEdit, setGlobalProxyEdit] = useState(null);
   const [globalProxySaving, setGlobalProxySaving] = useState(false);
+  const [confirmModal, setConfirmModal] = useState(null); // { message, onConfirm }
 
   useEffect(() => {
     fetchResolutions();
@@ -233,6 +234,30 @@ export default function AdminPanel({ adminUser, onAdminLogout }) {
     window.history.pushState(null, '', showAudit ? '/admin/audit-committee' : '/admin');
   };
 
+  const clearVotes = async (type) => {
+    const labels = {
+      resolutions: 'all resolution votes',
+      audit: 'all audit committee votes',
+      all: 'ALL votes (resolutions + audit committee)'
+    };
+    setConfirmModal({
+      message: `Are you sure you want to clear ${labels[type]}? This cannot be undone.`,
+      onConfirm: async () => {
+        try {
+          await fetch(`${API_URL}/api/admin/votes/${type}`, {
+            method: 'DELETE',
+            credentials: 'include'
+          });
+          if (type === 'resolutions' || type === 'all') fetchResolutions();
+          if (type === 'audit' || type === 'all') fetchAuditCommittee();
+        } catch (err) {
+          console.error(err);
+        }
+        setConfirmModal(null);
+      }
+    });
+  };
+
   const handleAdminLogout = async () => {
     try {
       await fetch(`${API_URL}/api/admin/auth/logout`, { method: 'POST', credentials: 'include' });
@@ -418,7 +443,41 @@ export default function AdminPanel({ adminUser, onAdminLogout }) {
             ))}
           </div>
         )}
+        {/* Danger Zone */}
+        <div className="ap-danger-zone">
+          <p className="ap-danger-label">Danger Zone</p>
+          <div className="ap-danger-actions">
+            <button className="ap-btn ap-btn-danger-outline" onClick={() => clearVotes('resolutions')}>
+              Clear Resolution Votes
+            </button>
+            <button className="ap-btn ap-btn-danger-outline" onClick={() => clearVotes('audit')}>
+              Clear Audit Votes
+            </button>
+            <button className="ap-btn ap-btn-danger" onClick={() => clearVotes('all')}>
+              Clear All Votes
+            </button>
+          </div>
+        </div>
       </main>
+
+      {/* Confirm Modal */}
+      {confirmModal && (
+        <div className="ap-modal-overlay" onClick={() => setConfirmModal(null)}>
+          <div className="ap-modal ap-confirm-modal" onClick={e => e.stopPropagation()}>
+            <div className="ap-confirm-icon">⚠️</div>
+            <h3 className="ap-confirm-title">Are you sure?</h3>
+            <p className="ap-confirm-message">{confirmModal.message}</p>
+            <div className="ap-confirm-actions">
+              <button className="ap-btn ap-btn-danger" onClick={confirmModal.onConfirm}>
+                Yes, Clear
+              </button>
+              <button className="ap-btn ap-btn-outline" onClick={() => setConfirmModal(null)}>
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {showResolutionForm && (
         <div className="ap-modal-overlay" onClick={() => setShowResolutionForm(false)}>
