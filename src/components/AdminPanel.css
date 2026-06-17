@@ -172,6 +172,10 @@
   max-width: 900px;
 }
 
+.ap-section-wide {
+  max-width: 100%;
+}
+
 /* ── Dashboard ──────────────────────────────────────────────────────────── */
 .ap-stats-grid {
   display: grid;

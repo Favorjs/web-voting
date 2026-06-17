@@ -489,7 +489,7 @@ export default function AdminPanel({ adminUser, onAdminLogout }) {
 
           {/* ── VOTERS ── */}
           {view === 'voters' && (
-            <div className="ap-section">
+            <div className="ap-section ap-section-wide">
               <div className="ap-section-bar">
                 <p className="ap-section-count">{voters.length} voter{voters.length !== 1 ? 's' : ''}</p>
                 <button className="ap-add-btn" onClick={() => { setVoterError(''); setShowVoterForm(true); }}>
