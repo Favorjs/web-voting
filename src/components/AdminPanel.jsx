@@ -11,6 +11,11 @@ import {
 
 const socket = io(API_URL);
 
+function SortArrow({ col, sort }) {
+  if (sort.key !== col) return <span className="ap-sort-icon ap-sort-idle">⇅</span>;
+  return <span className="ap-sort-icon ap-sort-active">{sort.dir === 'asc' ? '↑' : '↓'}</span>;
+}
+
 const NAV = [
   { key: 'dashboard',   label: 'Dashboard',        Icon: LayoutDashboard },
   { key: 'control',     label: 'Voting Control',    Icon: Radio },
@@ -47,7 +52,11 @@ export default function AdminPanel({ adminUser, onAdminLogout }) {
   const [voterSearch, setVoterSearch]               = useState('');
   const [voterSaving, setVoterSaving]               = useState(false);
   const [voterError, setVoterError]                 = useState('');
+  const [voterSort, setVoterSort]                   = useState({ key: 'holdings', dir: 'desc' });
+  const [voterPage, setVoterPage]                   = useState(1);
   const [controlTab, setControlTab]                 = useState('resolutions');
+
+  const VOTERS_PER_PAGE = 25;
 
   useEffect(() => {
     fetchAll();
@@ -251,11 +260,32 @@ export default function AdminPanel({ adminUser, onAdminLogout }) {
   const navigate = (v) => { setView(v); setSidebarOpen(false); };
 
   const activeControlItem = controlTab === 'audit' ? activeAuditMember : activeResolution;
+
   const filteredVoters = voters.filter(v =>
     (v.name || '').toLowerCase().includes(voterSearch.toLowerCase()) ||
     (v.acno || '').toLowerCase().includes(voterSearch.toLowerCase()) ||
     (v.email || '').toLowerCase().includes(voterSearch.toLowerCase())
   );
+
+  const sortedVoters = [...filteredVoters].sort((a, b) => {
+    const { key, dir } = voterSort;
+    let va, vb;
+    if (key === 'holdings')   { va = Number(a.holdings || 0);           vb = Number(b.holdings || 0); }
+    else if (key === 'resVotes')  { va = Number(a.resolutionVoteCount || 0); vb = Number(b.resolutionVoteCount || 0); }
+    else if (key === 'auditVotes') { va = Number(a.auditVoteCount || 0);    vb = Number(b.auditVoteCount || 0); }
+    else { va = (a.name || '').toLowerCase(); vb = (b.name || '').toLowerCase(); }
+    if (va < vb) return dir === 'asc' ? -1 : 1;
+    if (va > vb) return dir === 'asc' ? 1 : -1;
+    return 0;
+  });
+
+  const voterTotalPages = Math.max(1, Math.ceil(sortedVoters.length / VOTERS_PER_PAGE));
+  const pagedVoters = sortedVoters.slice((voterPage - 1) * VOTERS_PER_PAGE, voterPage * VOTERS_PER_PAGE);
+
+  const toggleVoterSort = (key) => {
+    setVoterSort(prev => prev.key === key ? { key, dir: prev.dir === 'asc' ? 'desc' : 'asc' } : { key, dir: 'desc' });
+    setVoterPage(1);
+  };
 
   return (
     <div className="ap-layout">
@@ -471,41 +501,79 @@ export default function AdminPanel({ adminUser, onAdminLogout }) {
                 className="ap-search-input"
                 placeholder="Search by name, account number or email…"
                 value={voterSearch}
-                onChange={e => setVoterSearch(e.target.value)}
+                onChange={e => { setVoterSearch(e.target.value); setVoterPage(1); }}
               />
               <div className="ap-table-wrap">
                 <table className="ap-table">
                   <thead>
                     <tr>
-                      <th>Name</th>
+                      <th className="ap-th-sortable" onClick={() => toggleVoterSort('name')}>
+                        Name <SortArrow col="name" sort={voterSort} />
+                      </th>
                       <th>Account No.</th>
-                      <th>Holdings</th>
+                      <th className="ap-th-sortable" onClick={() => toggleVoterSort('holdings')}>
+                        Holdings <SortArrow col="holdings" sort={voterSort} />
+                      </th>
+                      <th className="ap-th-sortable" onClick={() => toggleVoterSort('resVotes')}>
+                        Res. Votes <SortArrow col="resVotes" sort={voterSort} />
+                      </th>
+                      <th className="ap-th-sortable" onClick={() => toggleVoterSort('auditVotes')}>
+                        Audit Vote <SortArrow col="auditVotes" sort={voterSort} />
+                      </th>
                       <th>Phone</th>
-                      <th>Email</th>
                       <th></th>
                     </tr>
                   </thead>
                   <tbody>
-                    {filteredVoters.length === 0 && (
-                      <tr><td colSpan="6" className="ap-table-empty">No voters found.</td></tr>
+                    {pagedVoters.length === 0 && (
+                      <tr><td colSpan="7" className="ap-table-empty">No voters found.</td></tr>
                     )}
-                    {filteredVoters.map(v => (
-                      <tr key={v.id}>
-                        <td><strong>{v.name}</strong></td>
-                        <td className="ap-mono">{v.acno}</td>
-                        <td>{Number(v.holdings || 0).toLocaleString()}</td>
-                        <td>{v.phone_number || '—'}</td>
-                        <td>{v.email || '—'}</td>
-                        <td>
-                          <button className="ap-icon-btn ap-icon-danger" onClick={() => deleteVoter(v.id, v.name)} title="Delete">
-                            <Trash2 size={13} />
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
+                    {pagedVoters.map((v, idx) => {
+                      const rank = (voterPage - 1) * VOTERS_PER_PAGE + idx + 1;
+                      const resVotes = Number(v.resolutionVoteCount || 0);
+                      const auditVotes = Number(v.auditVoteCount || 0);
+                      return (
+                        <tr key={v.id}>
+                          <td>
+                            <div className="ap-voter-name">
+                              <span className="ap-voter-rank">#{rank}</span>
+                              <strong>{v.name}</strong>
+                            </div>
+                          </td>
+                          <td className="ap-mono">{v.acno}</td>
+                          <td className="ap-td-num">{Number(v.holdings || 0).toLocaleString()}</td>
+                          <td>
+                            {resVotes > 0
+                              ? <span className="ap-vote-chip ap-vote-yes">{resVotes}</span>
+                              : <span className="ap-vote-chip ap-vote-no">—</span>}
+                          </td>
+                          <td>
+                            {auditVotes > 0
+                              ? <span className="ap-vote-chip ap-vote-yes">{auditVotes}</span>
+                              : <span className="ap-vote-chip ap-vote-no">—</span>}
+                          </td>
+                          <td className="ap-td-muted">{v.phone_number || '—'}</td>
+                          <td>
+                            <button className="ap-icon-btn ap-icon-danger" onClick={() => deleteVoter(v.id, v.name)} title="Delete">
+                              <Trash2 size={13} />
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>
+
+              {voterTotalPages > 1 && (
+                <div className="ap-pagination">
+                  <button className="ap-page-btn" onClick={() => setVoterPage(1)} disabled={voterPage === 1}>«</button>
+                  <button className="ap-page-btn" onClick={() => setVoterPage(p => Math.max(1, p - 1))} disabled={voterPage === 1}>‹</button>
+                  <span className="ap-page-info">Page {voterPage} of {voterTotalPages} &nbsp;·&nbsp; {sortedVoters.length} voters</span>
+                  <button className="ap-page-btn" onClick={() => setVoterPage(p => Math.min(voterTotalPages, p + 1))} disabled={voterPage === voterTotalPages}>›</button>
+                  <button className="ap-page-btn" onClick={() => setVoterPage(voterTotalPages)} disabled={voterPage === voterTotalPages}>»</button>
+                </div>
+              )}
             </div>
           )}
 

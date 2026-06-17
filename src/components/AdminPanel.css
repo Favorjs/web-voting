@@ -864,6 +864,118 @@
   display: none;
 }
 
+/* ── Sortable table headers ──────────────────────────────────────────────── */
+.ap-th-sortable {
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
+}
+
+.ap-th-sortable:hover {
+  background: #eef2f7;
+}
+
+.ap-sort-icon {
+  display: inline-block;
+  margin-left: 4px;
+  font-size: 0.65rem;
+  vertical-align: middle;
+}
+
+.ap-sort-idle  { color: #cbd5e1; }
+.ap-sort-active { color: #107b5f; font-size: 0.75rem; }
+
+/* ── Voter rank + name cell ──────────────────────────────────────────────── */
+.ap-voter-name {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.ap-voter-rank {
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: #94a3b8;
+  min-width: 1.75rem;
+}
+
+.ap-td-num {
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.ap-td-muted {
+  color: #94a3b8;
+  font-size: 0.8rem;
+}
+
+/* ── Vote chips ──────────────────────────────────────────────────────────── */
+.ap-vote-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 28px;
+  padding: 0.15rem 0.5rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.ap-vote-yes {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.ap-vote-no {
+  background: #f1f5f9;
+  color: #94a3b8;
+}
+
+/* ── Pagination ──────────────────────────────────────────────────────────── */
+.ap-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 1.25rem;
+  padding: 0.75rem 0;
+}
+
+.ap-page-btn {
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 7px;
+  background: #fff;
+  color: #374151;
+  font-size: 0.9rem;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.15s;
+}
+
+.ap-page-btn:hover:not(:disabled) {
+  border-color: #107b5f;
+  color: #107b5f;
+  background: #f0fdf4;
+}
+
+.ap-page-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.ap-page-info {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #64748b;
+  padding: 0 0.5rem;
+  white-space: nowrap;
+}
+
 /* ── Responsive ──────────────────────────────────────────────────────────── */
 @media (max-width: 900px) {
   .ap-stats-grid {
