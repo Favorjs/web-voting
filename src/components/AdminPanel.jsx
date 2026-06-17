@@ -521,12 +521,13 @@ export default function AdminPanel({ adminUser, onAdminLogout }) {
                         Audit Vote <SortArrow col="auditVotes" sort={voterSort} />
                       </th>
                       <th>Phone</th>
+                      <th>Email</th>
                       <th></th>
                     </tr>
                   </thead>
                   <tbody>
                     {pagedVoters.length === 0 && (
-                      <tr><td colSpan="7" className="ap-table-empty">No voters found.</td></tr>
+                      <tr><td colSpan="8" className="ap-table-empty">No voters found.</td></tr>
                     )}
                     {pagedVoters.map((v, idx) => {
                       const rank = (voterPage - 1) * VOTERS_PER_PAGE + idx + 1;
@@ -553,6 +554,7 @@ export default function AdminPanel({ adminUser, onAdminLogout }) {
                               : <span className="ap-vote-chip ap-vote-no">—</span>}
                           </td>
                           <td className="ap-td-muted">{v.phone_number || '—'}</td>
+                          <td className="ap-td-muted">{v.email || '—'}</td>
                           <td>
                             <button className="ap-icon-btn ap-icon-danger" onClick={() => deleteVoter(v.id, v.name)} title="Delete">
                               <Trash2 size={13} />
