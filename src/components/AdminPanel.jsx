@@ -40,6 +40,9 @@ export default function AdminPanel({ adminUser, onAdminLogout }) {
   const [globalProxy, setGlobalProxy]           = useState({ proxyVotes: 0, proxyHoldings: 0 });
   const [globalProxyEdit, setGlobalProxyEdit]   = useState(null);
   const [globalProxySaving, setGlobalProxySaving] = useState(false);
+  const [votingDuration, setVotingDuration]     = useState(60);
+  const [votingDurationEdit, setVotingDurationEdit] = useState(null);
+  const [votingDurationSaving, setVotingDurationSaving] = useState(false);
 
   // UI
   const [showResolutionForm, setShowResolutionForm] = useState(false);
@@ -78,7 +81,7 @@ export default function AdminPanel({ adminUser, onAdminLogout }) {
 
   const fetchAll = () => {
     fetchResolutions(); fetchVotingState(); fetchAuditCommittee();
-    fetchStats(); fetchGlobalProxy(); fetchVoters();
+    fetchStats(); fetchGlobalProxy(); fetchVoters(); fetchVotingDuration();
   };
 
   const fetchResolutions = async () => {
@@ -118,6 +121,25 @@ export default function AdminPanel({ adminUser, onAdminLogout }) {
       const res = await fetch(`${API_URL}/api/proxy-settings`, { credentials: 'include' });
       if (res.ok) setGlobalProxy(await res.json());
     } catch (e) { console.error(e); }
+  };
+
+  const fetchVotingDuration = async () => {
+    try {
+      const res = await fetch(`${API_URL}/api/admin/voting-duration`, { credentials: 'include' });
+      if (res.ok) { const d = await res.json(); setVotingDuration(d.duration); }
+    } catch (e) { console.error(e); }
+  };
+
+  const saveVotingDuration = async () => {
+    if (votingDurationEdit === null) return;
+    setVotingDurationSaving(true);
+    try {
+      const res = await fetch(`${API_URL}/api/admin/voting-duration`, {
+        method: 'PUT', headers: { 'Content-Type': 'application/json' }, credentials: 'include',
+        body: JSON.stringify({ duration: Number(votingDurationEdit) })
+      });
+      if (res.ok) { const d = await res.json(); setVotingDuration(d.duration); setVotingDurationEdit(null); }
+    } catch (e) { console.error(e); } finally { setVotingDurationSaving(false); }
   };
 
   const fetchVoters = async () => {
@@ -612,6 +634,28 @@ export default function AdminPanel({ adminUser, onAdminLogout }) {
           {/* ── SETTINGS ── */}
           {view === 'settings' && (
             <div className="ap-section">
+
+              <div className="ap-settings-block">
+                <h3 className="ap-block-title">Voting Timer Duration</h3>
+                <p className="ap-muted" style={{ marginBottom: '1.25rem' }}>How long each voting session stays open (in seconds)</p>
+                <div className="ap-proxy-row">
+                  <div className="ap-proxy-field">
+                    <label>Duration (seconds)</label>
+                    <input
+                      type="number" min="10" max="3600"
+                      value={votingDurationEdit !== null ? votingDurationEdit : votingDuration}
+                      onChange={e => setVotingDurationEdit(e.target.value)}
+                    />
+                  </div>
+                  <p className="ap-duration-hint">
+                    = {Math.floor((votingDurationEdit !== null ? Number(votingDurationEdit) : votingDuration) / 60)}m {(votingDurationEdit !== null ? Number(votingDurationEdit) : votingDuration) % 60}s
+                  </p>
+                  <button className="ap-btn ap-btn-primary" onClick={saveVotingDuration} disabled={votingDurationSaving || votingDurationEdit === null}>
+                    {votingDurationSaving ? 'Saving…' : 'Save'}
+                  </button>
+                </div>
+              </div>
+
               <div className="ap-settings-block">
                 <h3 className="ap-block-title">Global Proxy Settings</h3>
                 <p className="ap-muted" style={{ marginBottom: '1.25rem' }}>Applied to all resolutions on the results screen</p>

@@ -148,11 +148,15 @@ export default function VotingPage({ userName, onLogout }) {
   }, []);
 
   useEffect(() => {
-    if (!votingState.isOpen || !(activeResolution || activeAuditMember)) {
+    if (!votingState.isOpen || !votingState.startedAt) {
       setTimeLeft(0);
       return;
     }
-    setTimeLeft(60);
+    const duration = votingState.duration || 60;
+    const elapsed = Math.floor((Date.now() - votingState.startedAt) / 1000);
+    const remaining = Math.max(0, duration - elapsed);
+    setTimeLeft(remaining);
+    if (remaining === 0) return;
     const int = setInterval(() => {
       setTimeLeft(prev => {
         if (prev <= 1) { clearInterval(int); return 0; }
@@ -160,7 +164,7 @@ export default function VotingPage({ userName, onLogout }) {
       });
     }, 1000);
     return () => clearInterval(int);
-  }, [votingState.isOpen, activeResolution, activeAuditMember]);
+  }, [votingState.startedAt]); // only restarts when a NEW session opens
 
   const handleLogout = async () => {
     try {

@@ -1012,6 +1012,17 @@
   white-space: nowrap;
 }
 
+/* ── Duration hint ───────────────────────────────────────────────────────── */
+.ap-duration-hint {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #107b5f;
+  margin: 0;
+  align-self: flex-end;
+  padding-bottom: 0.6rem;
+  white-space: nowrap;
+}
+
 /* ── Responsive ──────────────────────────────────────────────────────────── */
 @media (max-width: 900px) {
   .ap-stats-grid {
