@@ -312,6 +312,38 @@
   font-weight: 600;
 }
 
+.ap-section-bar-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.ap-export-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: transparent;
+  color: #107b5f;
+  border: 1.5px solid #107b5f;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+
+.ap-export-btn:hover:not(:disabled) {
+  background: #f0fdf4;
+}
+
+.ap-export-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
 /* ── Control Tabs ──────────────────────────────────────────────────────── */
 .ap-ctrl-tabs {
   display: flex;

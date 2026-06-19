@@ -6,7 +6,7 @@ import { API_URL } from '../config';
 import {
   LayoutDashboard, Radio, FileText, Users, UserPlus,
   Settings, Menu, LogOut, Wifi, WifiOff, Trash2,
-  Edit2, Plus, AlertTriangle
+  Edit2, Plus, AlertTriangle, Download
 } from 'lucide-react';
 
 const socket = io(API_URL);
@@ -227,6 +227,31 @@ export default function AdminPanel({ adminUser, onAdminLogout }) {
       fetchVoters(); fetchStats(); setConfirmModal(null);
     }
   });
+
+  const exportVotersCSV = () => {
+    const headers = ['#', 'Name', 'Account No.', 'Holdings', 'Resolution Votes', 'Audit Votes', 'Phone', 'Email', 'CHN'];
+    const rows = sortedVoters.map((v, i) => [
+      i + 1,
+      v.name || '',
+      v.acno || '',
+      v.holdings || 0,
+      v.resolutionVoteCount || 0,
+      v.auditVoteCount || 0,
+      v.phone_number || '',
+      v.email || '',
+      v.chn || ''
+    ]);
+    const csv = [headers, ...rows]
+      .map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(','))
+      .join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `voters-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
 
   // Proxy settings
   const saveGlobalProxy = async () => {
@@ -492,9 +517,14 @@ export default function AdminPanel({ adminUser, onAdminLogout }) {
             <div className="ap-section ap-section-wide">
               <div className="ap-section-bar">
                 <p className="ap-section-count">{voters.length} voter{voters.length !== 1 ? 's' : ''}</p>
-                <button className="ap-add-btn" onClick={() => { setVoterError(''); setShowVoterForm(true); }}>
-                  <Plus size={14} /> Add Voter
-                </button>
+                <div className="ap-section-bar-actions">
+                  <button className="ap-export-btn" onClick={exportVotersCSV} disabled={voters.length === 0} title="Export to CSV">
+                    <Download size={14} /> Export CSV
+                  </button>
+                  <button className="ap-add-btn" onClick={() => { setVoterError(''); setShowVoterForm(true); }}>
+                    <Plus size={14} /> Add Voter
+                  </button>
+                </div>
               </div>
               <input
                 type="text"
