@@ -637,7 +637,7 @@ export default function AdminPanel({ adminUser, onAdminLogout }) {
 
               <div className="ap-settings-block">
                 <h3 className="ap-block-title">Voting Timer Duration</h3>
-                <p className="ap-muted" style={{ marginBottom: '1.25rem' }}>How long each voting session stays open (in seconds)</p>
+                <p className="ap-muted" style={{ marginBottom: '1.25rem' }}>Controls the countdown on the voter page and the results screen — both stay in sync</p>
                 <div className="ap-proxy-row">
                   <div className="ap-proxy-field">
                     <label>Duration (seconds)</label>
@@ -676,6 +676,20 @@ export default function AdminPanel({ adminUser, onAdminLogout }) {
                   </div>
                   <button className="ap-btn ap-btn-primary" onClick={saveGlobalProxy} disabled={globalProxySaving || globalProxyEdit === null}>
                     {globalProxySaving ? 'Saving…' : 'Save'}
+                  </button>
+                  <button className="ap-btn ap-btn-danger-outline" onClick={() => setConfirmModal({
+                    message: 'Reset proxy votes and holdings to zero?',
+                    onConfirm: async () => {
+                      await fetch(`${API_URL}/api/admin/proxy-settings`, {
+                        method: 'PUT', headers: { 'Content-Type': 'application/json' }, credentials: 'include',
+                        body: JSON.stringify({ proxyVotes: 0, proxyHoldings: 0 })
+                      });
+                      setGlobalProxy({ proxyVotes: 0, proxyHoldings: 0 });
+                      setGlobalProxyEdit(null);
+                      setConfirmModal(null);
+                    }
+                  })}>
+                    Clear Proxy
                   </button>
                 </div>
               </div>

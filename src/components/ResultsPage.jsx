@@ -16,6 +16,8 @@ export default function ResultsPage() {
   const [activeAuditMember, setActiveAuditMember] = useState(null);
   const [timeLeft, setTimeLeft] = useState(0);
   const [isVotingOpen, setIsVotingOpen] = useState(false);
+  const [votingStartedAt, setVotingStartedAt] = useState(null);
+  const [votingDuration, setVotingDuration] = useState(60);
   const [proxyVotes, setProxyVotes] = useState(0);
   const [proxyHoldings, setProxyHoldings] = useState(0);
   const [voteCounts, setVoteCounts] = useState({ 
@@ -53,13 +55,19 @@ export default function ResultsPage() {
     const fetchData = async () => {
       try {
         setLoading(true);
-        await Promise.all([
+        const [,,,,, vsRes] = await Promise.all([
           fetchResults(),
           fetchActiveResolution(),
           fetchActiveAuditMember(),
           fetchAuditResults(),
           fetchProxySettings(),
+          fetch(`${API_URL}/api/voting-state`).then(r => r.json()).catch(() => null),
         ]);
+        if (vsRes) {
+          setIsVotingOpen(vsRes.isOpen);
+          setVotingStartedAt(vsRes.startedAt ?? null);
+          if (vsRes.duration) setVotingDuration(vsRes.duration);
+        }
       } catch (err) {
         console.error('Initial data load error:', err);
         setError('Failed to load initial data');
@@ -103,7 +111,6 @@ export default function ResultsPage() {
       setActiveResolution(resolution);
       setActiveAuditMember(null); // clear audit context when switching to resolution
       if (resolution) {
-        setTimeLeft(60);
         fetchVoteCounts(resolution.id);
       } else {
         setVoteCounts({ yes: 0, no: 0, total: 0, percentageYes: 0, percentageNo: 0 });
@@ -132,8 +139,9 @@ export default function ResultsPage() {
     });
     socket.on('voting-state', state => {
       setIsVotingOpen(state.isOpen);
+      setVotingStartedAt(state.startedAt ?? null);
+      if (state.duration) setVotingDuration(state.duration);
       if (!state.isOpen) {
-       // setActiveResolution(null);
         setActiveAuditMember(null);
       } else if (state.type === 'resolution') {
         fetchActiveResolution();
@@ -158,24 +166,22 @@ export default function ResultsPage() {
   }, [socket, activeResolution, activeAuditMember]);
 
   useEffect(() => {
-
-    
-    if (!activeResolution || !isVotingOpen) {
+    if (!isVotingOpen || !votingStartedAt) {
       setTimeLeft(0);
       return;
     }
-    setTimeLeft(60);
+    const elapsed = Math.floor((Date.now() - votingStartedAt) / 1000);
+    const remaining = Math.max(0, votingDuration - elapsed);
+    setTimeLeft(remaining);
+    if (remaining === 0) return;
     const interval = setInterval(() => {
       setTimeLeft(prev => {
-        if (prev <= 1) {
-          clearInterval(interval);
-          return 0;
-        }
+        if (prev <= 1) { clearInterval(interval); return 0; }
         return prev - 1;
       });
     }, 1000);
     return () => clearInterval(interval);
-  }, [activeResolution, isVotingOpen]);
+  }, [votingStartedAt]); // only restarts when a new session opens
 
   const downloadPDF = async () => {
     try {
