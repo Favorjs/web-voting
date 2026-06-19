@@ -17,6 +17,7 @@ export default function ResultsPage() {
   const [timeLeft, setTimeLeft] = useState(0);
   const [isVotingOpen, setIsVotingOpen] = useState(false);
   const [votingStartedAt, setVotingStartedAt] = useState(null);
+  const [votingActiveId, setVotingActiveId] = useState(null);
   const [votingDuration, setVotingDuration] = useState(60);
   const [proxyVotes, setProxyVotes] = useState(0);
   const [proxyHoldings, setProxyHoldings] = useState(0);
@@ -66,6 +67,7 @@ export default function ResultsPage() {
         if (vsRes) {
           setIsVotingOpen(vsRes.isOpen);
           setVotingStartedAt(vsRes.startedAt ?? null);
+          setVotingActiveId(vsRes.activeId ?? null);
           if (vsRes.duration) setVotingDuration(vsRes.duration);
         }
       } catch (err) {
@@ -140,6 +142,7 @@ export default function ResultsPage() {
     socket.on('voting-state', state => {
       setIsVotingOpen(state.isOpen);
       setVotingStartedAt(state.startedAt ?? null);
+      setVotingActiveId(state.activeId ?? null);
       if (state.duration) setVotingDuration(state.duration);
       if (!state.isOpen) {
         setActiveAuditMember(null);
@@ -181,7 +184,8 @@ export default function ResultsPage() {
       });
     }, 1000);
     return () => clearInterval(interval);
-  }, [votingStartedAt]); // only restarts when a new session opens
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [votingStartedAt, votingActiveId]); // restarts for each new session or new active item
 
   const downloadPDF = async () => {
     try {

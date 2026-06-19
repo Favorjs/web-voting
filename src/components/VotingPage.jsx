@@ -164,7 +164,8 @@ export default function VotingPage({ userName, onLogout }) {
       });
     }, 1000);
     return () => clearInterval(int);
-  }, [votingState.startedAt]); // only restarts when a NEW session opens
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [votingState.startedAt, votingState.activeId]); // restarts for each new session or new active item
 
   const handleLogout = async () => {
     try {
