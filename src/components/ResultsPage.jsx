@@ -173,10 +173,13 @@ export default function ResultsPage() {
       setTimeLeft(0);
       return;
     }
-    const elapsed = votingStartedAt
-      ? Math.floor((Date.now() - votingStartedAt) / 1000)
-      : 0;
-    const remaining = Math.max(0, votingDuration - elapsed);
+    const duration = votingDuration || 60;
+    let remaining = duration;
+    if (votingStartedAt) {
+      const rawElapsed = Math.floor((Date.now() - votingStartedAt) / 1000);
+      if (rawElapsed > 0 && rawElapsed < duration) remaining = duration - rawElapsed;
+      else if (rawElapsed >= duration) remaining = 0;
+    }
     setTimeLeft(remaining);
     if (remaining === 0) return;
     const interval = setInterval(() => {
@@ -186,8 +189,9 @@ export default function ResultsPage() {
       });
     }, 1000);
     return () => clearInterval(interval);
+  // votingActiveId acts as sessionKey for the results page
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isVotingOpen, votingStartedAt, votingActiveId]);
+  }, [isVotingOpen, votingActiveId]);
 
   const downloadPDF = async () => {
     try {

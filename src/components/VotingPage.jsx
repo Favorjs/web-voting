@@ -153,10 +153,14 @@ export default function VotingPage({ userName, onLogout }) {
       return;
     }
     const duration = votingState.duration || 60;
-    const elapsed = votingState.startedAt
-      ? Math.floor((Date.now() - votingState.startedAt) / 1000)
-      : 0;
-    const remaining = Math.max(0, duration - elapsed);
+    // Use startedAt only to recover remaining time on page refresh.
+    // Clamp elapsed to [0, duration) so clock skew never causes instant "Time's up".
+    let remaining = duration;
+    if (votingState.startedAt) {
+      const rawElapsed = Math.floor((Date.now() - votingState.startedAt) / 1000);
+      if (rawElapsed > 0 && rawElapsed < duration) remaining = duration - rawElapsed;
+      else if (rawElapsed >= duration) remaining = 0;
+    }
     setTimeLeft(remaining);
     if (remaining === 0) return;
     const int = setInterval(() => {
@@ -166,8 +170,9 @@ export default function VotingPage({ userName, onLogout }) {
       });
     }, 1000);
     return () => clearInterval(int);
+  // sessionKey increments every time voting opens — guarantees a fresh timer per session
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [votingState.isOpen, votingState.startedAt, votingState.activeId]);
+  }, [votingState.isOpen, votingState.sessionKey]);
 
   const handleLogout = async () => {
     try {
