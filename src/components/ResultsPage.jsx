@@ -169,11 +169,13 @@ export default function ResultsPage() {
   }, [socket, activeResolution, activeAuditMember]);
 
   useEffect(() => {
-    if (!isVotingOpen || !votingStartedAt) {
+    if (!isVotingOpen) {
       setTimeLeft(0);
       return;
     }
-    const elapsed = Math.floor((Date.now() - votingStartedAt) / 1000);
+    const elapsed = votingStartedAt
+      ? Math.floor((Date.now() - votingStartedAt) / 1000)
+      : 0;
     const remaining = Math.max(0, votingDuration - elapsed);
     setTimeLeft(remaining);
     if (remaining === 0) return;
@@ -185,7 +187,7 @@ export default function ResultsPage() {
     }, 1000);
     return () => clearInterval(interval);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [votingStartedAt, votingActiveId]); // restarts for each new session or new active item
+  }, [isVotingOpen, votingStartedAt, votingActiveId]);
 
   const downloadPDF = async () => {
     try {

@@ -148,12 +148,14 @@ export default function VotingPage({ userName, onLogout }) {
   }, []);
 
   useEffect(() => {
-    if (!votingState.isOpen || !votingState.startedAt) {
+    if (!votingState.isOpen) {
       setTimeLeft(0);
       return;
     }
     const duration = votingState.duration || 60;
-    const elapsed = Math.floor((Date.now() - votingState.startedAt) / 1000);
+    const elapsed = votingState.startedAt
+      ? Math.floor((Date.now() - votingState.startedAt) / 1000)
+      : 0;
     const remaining = Math.max(0, duration - elapsed);
     setTimeLeft(remaining);
     if (remaining === 0) return;
@@ -165,7 +167,7 @@ export default function VotingPage({ userName, onLogout }) {
     }, 1000);
     return () => clearInterval(int);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [votingState.startedAt, votingState.activeId]); // restarts for each new session or new active item
+  }, [votingState.isOpen, votingState.startedAt, votingState.activeId]);
 
   const handleLogout = async () => {
     try {
