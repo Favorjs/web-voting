@@ -19,6 +19,7 @@ export default function ResultsPage() {
   const [votingStartedAt, setVotingStartedAt] = useState(null);
   const [votingActiveId, setVotingActiveId] = useState(null);
   const [votingDuration, setVotingDuration] = useState(60);
+  const [votingSessionKey, setVotingSessionKey] = useState(0);
   const [proxyVotes, setProxyVotes] = useState(0);
   const [proxyHoldings, setProxyHoldings] = useState(0);
   const [voteCounts, setVoteCounts] = useState({ 
@@ -69,6 +70,7 @@ export default function ResultsPage() {
           setVotingStartedAt(vsRes.startedAt ?? null);
           setVotingActiveId(vsRes.activeId ?? null);
           if (vsRes.duration) setVotingDuration(vsRes.duration);
+          if (vsRes.sessionKey) setVotingSessionKey(vsRes.sessionKey);
         }
       } catch (err) {
         console.error('Initial data load error:', err);
@@ -130,20 +132,43 @@ export default function ResultsPage() {
       }
     };
   
-    socket.on('vote-updated', handleVoteUpdate);
-    socket.on('resolution-update', handleResolutionUpdate);
-    socket.on('resolution-activated', (resolution) => {
-      handleResolutionUpdate(resolution);
-    });
-    socket.on('audit-member-activated', (member) => {
+    const handleResolutionActivated = (resolution) => handleResolutionUpdate(resolution);
+    const handleAuditMemberActivated = (member) => {
       setActiveAuditMember(member);
       setActiveResolution(null);
-    });
-    socket.on('voting-state', state => {
+    };
+    const handleProxyUpdate = ({ proxyVotes: pv, proxyHoldings: ph }) => {
+      setProxyVotes(pv);
+      setProxyHoldings(ph);
+    };
+
+    socket.on('vote-updated', handleVoteUpdate);
+    socket.on('resolution-update', handleResolutionUpdate);
+    socket.on('resolution-activated', handleResolutionActivated);
+    socket.on('audit-member-activated', handleAuditMemberActivated);
+    socket.on('audit-vote-updated', handleAuditVoteUpdate);
+    socket.on('proxy-settings-updated', handleProxyUpdate);
+
+    return () => {
+      socket.off('vote-updated', handleVoteUpdate);
+      socket.off('resolution-update', handleResolutionUpdate);
+      socket.off('resolution-activated', handleResolutionActivated);
+      socket.off('audit-member-activated', handleAuditMemberActivated);
+      socket.off('audit-vote-updated', handleAuditVoteUpdate);
+      socket.off('proxy-settings-updated', handleProxyUpdate);
+    };
+  }, [socket, activeResolution, activeAuditMember]);
+
+  // Dedicated effect for voting-state — must NOT be inside the activeResolution effect
+  // or it leaks a new handler on every vote, creating dozens of stale listeners
+  useEffect(() => {
+    if (!socket) return;
+    const handleVotingState = state => {
       setIsVotingOpen(state.isOpen);
       setVotingStartedAt(state.startedAt ?? null);
       setVotingActiveId(state.activeId ?? null);
       if (state.duration) setVotingDuration(state.duration);
+      if (state.sessionKey) setVotingSessionKey(state.sessionKey);
       if (!state.isOpen) {
         setActiveAuditMember(null);
       } else if (state.type === 'resolution') {
@@ -153,20 +178,10 @@ export default function ResultsPage() {
         fetchActiveAuditMember();
         setActiveResolution(null);
       }
-    });
-    socket.on('audit-vote-updated', handleAuditVoteUpdate);
-    socket.on('proxy-settings-updated', ({ proxyVotes: pv, proxyHoldings: ph }) => {
-      setProxyVotes(pv);
-      setProxyHoldings(ph);
-    });
-
-    return () => {
-      socket.off('vote-updated', handleVoteUpdate);
-      socket.off('resolution-update', handleResolutionUpdate);
-      socket.off('audit-vote-updated', handleAuditVoteUpdate);
-      socket.off('proxy-settings-updated');
     };
-  }, [socket, activeResolution, activeAuditMember]);
+    socket.on('voting-state', handleVotingState);
+    return () => socket.off('voting-state', handleVotingState);
+  }, [socket]);
 
   useEffect(() => {
     if (!isVotingOpen) {
@@ -174,14 +189,7 @@ export default function ResultsPage() {
       return;
     }
     const duration = votingDuration || 60;
-    let remaining = duration;
-    if (votingStartedAt) {
-      const rawElapsed = Math.floor((Date.now() - votingStartedAt) / 1000);
-      if (rawElapsed > 0 && rawElapsed < duration) remaining = duration - rawElapsed;
-      else if (rawElapsed >= duration) remaining = 0;
-    }
-    setTimeLeft(remaining);
-    if (remaining === 0) return;
+    setTimeLeft(duration);
     const interval = setInterval(() => {
       setTimeLeft(prev => {
         if (prev <= 1) { clearInterval(interval); return 0; }
@@ -189,9 +197,7 @@ export default function ResultsPage() {
       });
     }, 1000);
     return () => clearInterval(interval);
-  // votingActiveId acts as sessionKey for the results page
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isVotingOpen, votingActiveId]);
+  }, [isVotingOpen, votingSessionKey, votingDuration]);
 
   const downloadPDF = async () => {
     try {
@@ -449,7 +455,7 @@ const fetchActiveAuditMember = async () => {
         <div className="current-resolution">
           <h2>Audit Committee Election</h2>
           {/* <h1><span style={{fontSize:'0.8em',marginLeft:'10px'}}>
-            {isVotingOpen ? (timeLeft>0?`(${formatTime(timeLeft)})`:'(Time\'s up)') : ''}
+            {isVotingOpen && timeLeft > 0 ? `(${formatTime(timeLeft)})` : ''}
           </span></h1> */}
           
           <div className="results-display">
@@ -509,7 +515,7 @@ const fetchActiveAuditMember = async () => {
         <div className="current-resolution">
         
           <h1><span style={{fontSize:'0.8em',marginLeft:'10px'}}>
-            {isVotingOpen ? (timeLeft>0?`(${formatTime(timeLeft)})`:'(Time\'s up)') : ''}
+            {isVotingOpen && timeLeft > 0 ? `(${formatTime(timeLeft)})` : ''}
           </span></h1>
           <h2>{activeResolution.title}</h2>
           <p>{activeResolution.description}</p>
